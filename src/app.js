@@ -288,12 +288,12 @@ function syncQuery() {
 }
 
 function stamp() {
-  const date = meta.generated.slice(0, 10);
+  const version = meta.version ? `Server ${esc(meta.version)}` : '';
   const commit =
     meta.repo && meta.commit
-      ? ` · <a href="https://github.com/${esc(meta.repo)}/commit/${esc(meta.commit)}">${esc(meta.commit.slice(0, 7))}</a>`
+      ? `<a href="https://github.com/${esc(meta.repo)}/commit/${esc(meta.commit)}">${esc(meta.commit.slice(0, 7))}</a>`
       : '';
-  $('#stamp').innerHTML = `${esc(date)}${commit}`;
+  $('#stamp').innerHTML = [version, commit].filter(Boolean).join(' · ');
 }
 
 async function init() {

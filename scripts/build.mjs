@@ -23,6 +23,14 @@ function normalizeBase(value) {
   return `${(value || '').replace(/\/+$/, '')}/`;
 }
 
+async function readVersion() {
+  try {
+    return (await readFile(join(root, 'VERSION'), 'utf8')).trim();
+  } catch {
+    return '';
+  }
+}
+
 async function writeJson(path, value) {
   await mkdir(join(path, '..'), { recursive: true });
   await writeFile(path, JSON.stringify(value));
@@ -94,7 +102,7 @@ const { shardOf, count } = await writeShards(model);
 await writeSearch(model);
 await writeJson(join(dist, 'data', 'meta.json'), {
   build,
-  generated: new Date().toISOString(),
+  version: await readVersion(),
   commit: process.env.GITHUB_SHA || '',
   repo: process.env.GITHUB_REPOSITORY || '',
   source: basename(dump),
