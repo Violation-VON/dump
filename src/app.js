@@ -1,4 +1,4 @@
-const { base, build } = window.SITE;
+const { base, build, name } = window.SITE;
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
   String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -66,7 +66,7 @@ function getSearch() {
 }
 
 function setTitle(t) {
-  document.title = t ? `${t} · Object Dump Docs` : 'Object Dump Docs';
+  document.title = t ? `${t} · ${name}` : name;
 }
 
 function markActive() {
@@ -190,7 +190,7 @@ function showHome() {
     .sort((a, b) => b[1] - a[1]);
   const structs = classes.filter((c) => c.struct).length;
   $('#main').innerHTML =
-    `<div class="intro"><h1>${esc(meta.source)}</h1>` +
+    `<div class="intro"><h1>${esc(name)}</h1>` +
     `<div class="stats"><span><b>${(classes.length - structs).toLocaleString()}</b>classes</span>` +
     `<span><b>${structs.toLocaleString()}</b>structs</span>` +
     `<span><b>${meta.counts.fields.toLocaleString()}</b>fields</span>` +

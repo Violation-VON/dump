@@ -7,6 +7,7 @@ import { parseDump } from './parse.mjs';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = join(root, 'dist');
 const SHARD_BYTES = 1_500_000;
+const SITE_NAME = 'Object Browser';
 
 function findDump() {
   const candidates = [process.env.DUMP, 'UE4SS_ObjectDump.txt', 'UE4SS_ObjectDump.txt.gz']
@@ -80,7 +81,8 @@ async function writeSearch(model) {
 async function writeSite(base, build) {
   const html = (await readFile(join(root, 'src', 'index.html'), 'utf8'))
     .replaceAll('%BASE%', base)
-    .replaceAll('%BUILD%', build);
+    .replaceAll('%BUILD%', build)
+    .replaceAll('%NAME%', SITE_NAME);
   await writeFile(join(dist, 'index.html'), html);
   await writeFile(join(dist, '404.html'), html);
   await copyFile(join(root, 'src', 'style.css'), join(dist, 'style.css'));
