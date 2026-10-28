@@ -1,27 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>%NAME%</title>
-<link rel="stylesheet" href="%BASE%style.css?v=%BUILD%">
-<script>window.SITE={base:"%BASE%",build:"%BUILD%",name:"%NAME%"}</script>
-<script type="module" src="%BASE%app.js?v=%BUILD%"></script>
-</head>
-<body>
-<header>
-<a class="brand" href="%BASE%">%NAME%</a>
-<span id="stamp"></span>
-</header>
-<div class="wrap">
-<aside>
-<div class="tools">
-<input type="search" id="q" placeholder="Search types and members ( / )" autocomplete="off" aria-label="Search">
-<label><input type="checkbox" id="nat" checked> Native only (/Script)</label>
-</div>
-<div id="list"></div>
-</aside>
-<main id="main"><p class="muted">Loading…</p></main>
-</div>
-</body>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>%NAME%</title>
+    <link rel="stylesheet" href="%BASE%style.css?v=%BUILD%">
+    <script>
+    window.SITE = { base: "%BASE%", build: "%BUILD%", name: "%NAME%" };
+    </script>
+    <script type="module" src="%BASE%app.js?v=%BUILD%"></script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="%BASE%">%NAME%</a>
+      <span id="stamp"></span>
+    </header>
+    <div class="wrap">
+      <aside>
+        <div class="tools">
+          <input type="search" id="q"
+            placeholder="Search types and members ( / )" autocomplete="off"
+            aria-label="Search">
+          <label><input type="checkbox" id="nat" checked> Native only (/Script)</label>
+        </div>
+        <div id="list"></div>
+      </aside>
+      <main id="main">
+        <p class="muted">Loading…</p>
+      </main>
+    </div>
+  </body>
 </html>
