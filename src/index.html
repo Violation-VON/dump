@@ -1,19 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-build="%BUILD%" data-name="%NAME%">
   <head>
     <meta charset="utf-8">
     <meta name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <base href="%BASE%">
     <title>%NAME%</title>
-    <link rel="stylesheet" href="%BASE%style.css?v=%BUILD%">
-    <script>
-    window.SITE = { base: "%BASE%", build: "%BUILD%", name: "%NAME%" };
-    </script>
-    <script type="module" src="%BASE%app.js?v=%BUILD%"></script>
+    <link rel="stylesheet" href="style.css?v=%BUILD%">
+    <script type="module" src="app.js?v=%BUILD%"></script>
   </head>
   <body>
     <header>
-      <a class="brand" href="%BASE%">%NAME%</a>
+      <a class="brand" href=".">%NAME%</a>
       <span id="stamp"></span>
     </header>
     <div class="wrap">

@@ -1,11 +1,5 @@
 import type { Members, Meta, SearchIndex, TypeDesc } from "./types.ts";
 
-interface Site {
-  base: string;
-  build: string;
-  name: string;
-}
-
 interface Cls {
   i: number;
   name: string;
@@ -16,7 +10,8 @@ interface Cls {
   path: string;
 }
 
-const { base, build, name } = (globalThis as unknown as { SITE: Site }).SITE;
+const { build = "", name = "" } = document.documentElement.dataset;
+const base = new URL(document.baseURI).pathname;
 
 const $ = <T extends HTMLElement = HTMLElement>(selector: string): T =>
   document.querySelector<T>(selector)!;
@@ -59,15 +54,15 @@ function writePref(key: string, value: string) {
 }
 
 async function fetchJson<T>(file: string): Promise<T> {
-  const r = await fetch(`${base}data/${file}?v=${build}`);
+  const r = await fetch(`data/${file}?v=${build}`);
   if (!r.ok) throw new Error(`${file}: ${r.status}`);
   return r.json();
 }
 
 const ePath = (p: string) => encodeURI(p).replace(/[#?]/g, encodeURIComponent);
 const classUrl = (c: Cls, id?: string) =>
-  `${base}c${ePath(c.path)}${id ? `#${encodeURIComponent(id)}` : ""}`;
-const pkgUrl = (p: string) => `${base}p${ePath(p)}`;
+  `c${ePath(c.path)}${id ? `#${encodeURIComponent(id)}` : ""}`;
+const pkgUrl = (p: string) => `p${ePath(p)}`;
 const link = (c: Cls) => `<a href="${esc(classUrl(c))}">${esc(c.name)}</a>`;
 const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;
 const isNative = (c: Cls) => c.path.startsWith("/Script/");
@@ -328,9 +323,7 @@ function notFound() {
   markActive();
   setTitle("Not found");
   $("#main").innerHTML =
-    `<h1>Not found</h1><p>No class or package at this address. <a href="${
-      esc(base)
-    }">Back to overview</a></p>`;
+    `<h1>Not found</h1><p>No class or package at this address. <a href=".">Back to overview</a></p>`;
 }
 
 function route() {
