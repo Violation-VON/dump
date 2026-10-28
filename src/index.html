@@ -11,12 +11,16 @@
 <body>
 <header>
 <a class="brand" href="%BASE%">%NAME%</a>
-<input type="search" id="q" placeholder="Search classes and members ( / )" autocomplete="off" aria-label="Search">
-<label class="nat"><input type="checkbox" id="nat" checked> Native only</label>
 <span id="stamp"></span>
 </header>
 <div class="wrap">
-<aside><div id="list"></div></aside>
+<aside>
+<div class="tools">
+<input type="search" id="q" placeholder="Search classes and members ( / )" autocomplete="off" aria-label="Search">
+<label><input type="checkbox" id="nat" checked> Native only (/Script)</label>
+</div>
+<div id="list"></div>
+</aside>
 <main id="main"><p class="muted">Loading…</p></main>
 </div>
 </body>

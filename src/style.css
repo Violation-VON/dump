@@ -63,18 +63,6 @@ header {
 }
 header a { color: inherit; }
 header .brand { font: 700 17px/1.2 system-ui, sans-serif; }
-header input[type=search] {
-  flex: 1;
-  min-width: 180px;
-  max-width: 420px;
-  padding: 6px 10px;
-  border: 1px solid var(--line);
-  border-radius: 3px;
-  background: var(--bg);
-  color: var(--fg);
-  font: 14px system-ui, sans-serif;
-}
-header .nat { white-space: nowrap; }
 header #stamp { margin-left: auto; opacity: .85; }
 
 .wrap {
@@ -90,6 +78,18 @@ aside {
   display: flex;
   flex-direction: column;
 }
+.tools { padding: 10px; border-bottom: 1px solid var(--line); font: 13px system-ui, sans-serif; }
+.tools input[type=search] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px system-ui, sans-serif;
+}
+.tools label { display: block; margin-top: 6px; color: var(--mute); }
 #list {
   overflow: auto;
   flex: 1;
