@@ -4,6 +4,9 @@
     "build": "deno run --allow-read --allow-write=dist --allow-env --v8-flags=--max-old-space-size=6144 scripts/build.ts && deno bundle --platform=browser --minify --output=dist/app.js src/app.ts",
     "serve": "deno run --allow-net --allow-read=dist --allow-env scripts/serve.ts"
   },
+  "imports": {
+    "mustache": "npm:mustache@4.2.0"
+  },
   "compilerOptions": {
     "lib": [
       "dom",

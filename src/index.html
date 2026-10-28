@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" data-build="%BUILD%" data-name="%NAME%">
+<html lang="en" data-build="{{build}}" data-name="{{name}}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <base href="%BASE%">
-    <title>%NAME%</title>
-    <link rel="stylesheet" href="style.css?v=%BUILD%">
-    <script type="module" src="app.js?v=%BUILD%"></script>
+    <base href="{{{base}}}">
+    <title>{{ name }}</title>
+    <link rel="stylesheet" href="style.css?v={{build}}">
+    <script type="module" src="app.js?v={{build}}"></script>
   </head>
   <body>
     <header>
-      <a class="brand" href=".">%NAME%</a>
+      <a class="brand" href=".">{{ name }}</a>
       <span id="stamp"></span>
     </header>
     <div class="wrap">

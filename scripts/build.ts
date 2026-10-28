@@ -1,3 +1,4 @@
+import Mustache from "mustache";
 import { type Model, parseDump } from "./parse.ts";
 import type { Members, Meta, SearchIndex } from "../src/types.ts";
 
@@ -84,10 +85,11 @@ function writeSearch(model: Model) {
 }
 
 async function writeSite(base: string, build: string) {
-  const html = (await Deno.readTextFile("src/index.html"))
-    .replaceAll("%BASE%", base)
-    .replaceAll("%BUILD%", build)
-    .replaceAll("%NAME%", SITE_NAME);
+  const html = Mustache.render(await Deno.readTextFile("src/index.html"), {
+    base,
+    build,
+    name: SITE_NAME,
+  });
   await write("dist/index.html", html);
   await write("dist/404.html", html);
   await Deno.copyFile("src/style.css", "dist/style.css");
