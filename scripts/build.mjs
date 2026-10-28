@@ -7,7 +7,7 @@ import { parseDump } from './parse.mjs';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = join(root, 'dist');
 const SHARD_BYTES = 1_500_000;
-const SITE_NAME = 'Object Browser';
+const SITE_NAME = 'Evrima Object Dump';
 
 function findDump() {
   const candidates = [process.env.DUMP, 'UE4SS_ObjectDump.txt', 'UE4SS_ObjectDump.txt.gz']
