@@ -1,0 +1,24 @@
+{
+  "license": "GPL-3.0-only",
+  "tasks": {
+    "build": "deno run --allow-read --allow-write=dist --allow-env --v8-flags=--max-old-space-size=6144 scripts/build.ts && deno bundle --platform=browser --minify --output=dist/app.js src/app.ts",
+    "serve": "deno run --allow-net --allow-read=dist --allow-env scripts/serve.ts"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "deno.ns"
+    ]
+  },
+  "fmt": {
+    "exclude": [
+      "dist/"
+    ]
+  },
+  "lint": {
+    "exclude": [
+      "dist/"
+    ]
+  }
+}
