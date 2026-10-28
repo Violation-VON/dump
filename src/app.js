@@ -194,7 +194,7 @@ function showHome() {
     `<span><b>${structs.toLocaleString()}</b>structs</span>` +
     `<span><b>${meta.counts.fields.toLocaleString()}</b>fields</span>` +
     `<span><b>${meta.counts.methods.toLocaleString()}</b>methods</span></div>` +
-    '<p class="muted">Pick a class on the left or search above. Every class, package and member has its own URL.</p></div>' +
+    '</div>' +
     `<h2>Native packages (${native.length})</h2><div class="tw"><table>` +
     native
       .map(([p, n]) => `<tr><td><a href="${esc(pkgUrl(p))}">${esc(p)}</a></td><td class="o">${n.toLocaleString()}</td></tr>`)
