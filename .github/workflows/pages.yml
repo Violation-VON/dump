@@ -6,6 +6,7 @@ on:
     paths:
       - UE4SS_ObjectDump.txt
       - UE4SS_ObjectDump.txt.gz
+      - VERSION
       - src/**
       - scripts/**
       - package.json
