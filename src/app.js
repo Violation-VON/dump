@@ -111,30 +111,29 @@ function classHtml(c, mm, ancestors, loaded) {
   let h = `<div class="pkg"><a href="${esc(pkgUrl(pkgOf(c)))}">${esc(pkgOf(c))}</a></div>`;
   h += `<h1>${c.struct ? 'Struct' : 'Class'} ${esc(c.name)}</h1><pre class="tree">${tree}</pre>`;
   if (kids.length) {
-    h += `<div class="sub"><b>Direct subclasses:</b> ${kids.slice(0, 60).map(link).join(', ')}`;
+    h += `<div class="sub"><b>${c.struct ? 'Child structs' : 'Direct subclasses'}:</b> ${kids.slice(0, 60).map(link).join(', ')}`;
     h += kids.length > 60 ? ` and ${kids.length - 60} more</div>` : '</div>';
   }
-  h += '<h2>Field summary</h2>';
-  h += mm.f.length
-    ? `<div class="tw"><table>${mm.f
-        .map(
-          ([n, t, o]) =>
-            `<tr id="${esc(n)}"><td class="t">${tstr(t)}</td>` +
-            `<td><a class="anc" href="${esc(classUrl(c, n))}">${esc(n)}</a></td><td class="o">${hex(o)}</td></tr>`,
-        )
-        .join('')}</table></div>`
-    : '<div class="empty">No fields declared on this class.</div>';
-  h += '<h2>Method summary</h2>';
-  h += mm.m.length
-    ? `<div class="tw"><table>${mm.m
-        .map(
-          ([n, r, ps]) =>
-            `<tr id="${esc(n)}()"><td class="t">${r ? tstr(r) : 'void'}</td>` +
-            `<td><a class="anc" href="${esc(classUrl(c, `${n}()`))}">${esc(n)}</a>` +
-            `(${ps.map(([pn, pt]) => `${tstr(pt)} ${esc(pn)}`).join(', ')})</td></tr>`,
-        )
-        .join('')}</table></div>`
-    : '<div class="empty">No methods declared on this class.</div>';
+  if (mm.f.length) {
+    h += `<h2>Field summary</h2><div class="tw"><table>${mm.f
+      .map(
+        ([n, t, o]) =>
+          `<tr id="${esc(n)}"><td class="t">${tstr(t)}</td>` +
+          `<td><a class="anc" href="${esc(classUrl(c, n))}">${esc(n)}</a></td><td class="o">${hex(o)}</td></tr>`,
+      )
+      .join('')}</table></div>`;
+  }
+  if (mm.m.length) {
+    h += `<h2>Method summary</h2><div class="tw"><table>${mm.m
+      .map(
+        ([n, r, ps]) =>
+          `<tr id="${esc(n)}()"><td class="t">${r ? tstr(r) : 'void'}</td>` +
+          `<td><a class="anc" href="${esc(classUrl(c, `${n}()`))}">${esc(n)}</a>` +
+          `(${ps.map(([pn, pt]) => `${tstr(pt)} ${esc(pn)}`).join(', ')})</td></tr>`,
+      )
+      .join('')}</table></div>`;
+  }
+  if (!mm.f.length && !mm.m.length) h += '<p class="muted">Nothing declared on this type.</p>';
   return h + inheritedHtml(ancestors, loaded);
 }
 
