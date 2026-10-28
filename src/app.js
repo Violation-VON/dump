@@ -256,7 +256,7 @@ async function renderList() {
       h += item(c);
     }
   }
-  h = `<h3>Classes (${total.toLocaleString()}${total > shown ? `, showing ${shown}` : ''})</h3>${h}`;
+  h = `<h3>Types (${total.toLocaleString()}${total > shown ? `, showing ${shown}` : ''})</h3>${h}`;
   $('#list').innerHTML = h;
   markActive();
   if (q.length < 3) return;
