@@ -14,7 +14,7 @@
     class="flex h-full flex-col bg-white text-ink-700 dark:bg-ink-950 dark:text-steel-400">
     <header
       class="flex flex-wrap items-center gap-4 bg-ink-300 px-4 py-2.5 text-sm text-white dark:bg-ink-400 dark:text-steel-200">
-      <a class="text-lg font-bold hover:underline" href=".">{{ name }}</a>
+      <a class="text-lg font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href=".">{{ name }}</a>
       <span id="stamp" class="ml-auto opacity-85 max-md:ml-0"></span>
     </header>
     <div class="flex min-h-0 flex-1 max-md:flex-col">
@@ -25,13 +25,13 @@
           <input type="search" id="q"
             placeholder="Search types and members ( / )" autocomplete="off"
             aria-label="Search"
-            class="w-full rounded-sm border border-steel-500 bg-white px-2 py-1.5 dark:border-ink-500 dark:bg-ink-950">
+            class="focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 w-full rounded-sm border border-steel-500 bg-white px-2 py-1.5 dark:border-ink-500 dark:bg-ink-950">
           <label class="mt-1.5 block text-steel-700 dark:text-steel-600"><input
-              type="checkbox" id="nat" checked class="mr-1"> Native only (/Script)</label>
+              type="checkbox" id="nat" checked class="mr-1 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300"> Native only (/Script)</label>
         </div>
-        <div id="list" class="flex-1 overflow-auto py-1.5 font-mono text-sm"></div>
+        <div id="list" class="focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 flex-1 overflow-auto py-1.5 font-mono text-sm"></div>
       </aside>
-      <main id="main" class="min-w-0 flex-1 overflow-auto px-8 pt-5 pb-16 max-md:p-4">
+      <main id="main" class="focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 min-w-0 flex-1 overflow-auto px-8 pt-5 pb-16 max-md:p-4">
         <p class="my-4 font-serif text-steel-700 dark:text-steel-600">Loading…</p>
       </main>
     </div>

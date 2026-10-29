@@ -64,7 +64,7 @@ const classUrl = (c: Cls, id?: string) =>
   `c${ePath(c.path)}${id ? `#${encodeURIComponent(id)}` : ""}`;
 const pkgUrl = (p: string) => `p${ePath(p)}`;
 const link = (c: Cls) =>
-  `<a class="text-azure-700 hover:underline dark:text-azure-300" href="${esc(classUrl(c))}">${esc(c.name)}</a>`;
+  `<a class="text-azure-700 hover:underline dark:text-azure-300 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="${esc(classUrl(c))}">${esc(c.name)}</a>`;
 const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;
 const isNative = (c: Cls) => c.path.startsWith("/Script/");
 const pkgOf = (c: Cls) => meta.pk[c.pk];
@@ -148,13 +148,13 @@ function inheritedHtml(chain: Cls[], loaded: Members[]): string {
     const names = (list: { 0: string }[], suffix: string) =>
       list
         .map((x) =>
-          `<a class="text-azure-700 hover:underline dark:text-azure-300" href="${esc(classUrl(a, x[0] + suffix))}">${
+          `<a class="text-azure-700 hover:underline dark:text-azure-300 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="${esc(classUrl(a, x[0] + suffix))}">${
             esc(x[0])
           }</a>`
         )
         .join(", ");
     h +=
-      `<details class="my-2 text-sm"><summary class="cursor-pointer font-semibold">Inherited from ${
+      `<details class="my-2 text-sm"><summary class="cursor-pointer font-semibold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300">Inherited from ${
         esc(a.name)
       } (${mm.f.length} fields, ${mm.m.length} methods)</summary>` +
       (mm.f.length ? `<p class="wrap-anywhere my-1.5 ml-4 font-mono"><b>Fields:</b> ${names(mm.f, "")}</p>` : "") +
@@ -187,7 +187,7 @@ function classHtml(
     )
     .join("\n");
   const kids = children.get(c.i) || [];
-  let h = `<div class="wrap-anywhere font-mono text-sm text-steel-700 dark:text-steel-600"><a class="text-azure-700 hover:underline dark:text-azure-300" href="${esc(pkgUrl(pkgOf(c)))}">${
+  let h = `<div class="wrap-anywhere font-mono text-sm text-steel-700 dark:text-steel-600"><a class="text-azure-700 hover:underline dark:text-azure-300 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="${esc(pkgUrl(pkgOf(c)))}">${
     esc(pkgOf(c))
   }</a></div>`;
   h += `<h1 class="mb-4 font-serif text-3xl font-bold">${c.struct ? "Struct" : "Class"} ${esc(c.name)}</h1>` +
@@ -204,7 +204,7 @@ function classHtml(
         .map(
           ([n, t, o]) =>
             `<tr id="${esc(n)}" class="group data-[hl]:bg-straw-100 dark:data-[hl]:bg-straw-900 border-t border-steel-500 first:border-t-0 even:bg-steel-50 dark:border-ink-500 dark:even:bg-ink-900"><td class="w-px whitespace-nowrap px-3 py-1 text-right align-top">${tstr(t)}</td>` +
-            `<td class="px-3 py-1 align-top"><a class="font-bold before:mr-0.5 before:text-steel-700 dark:before:text-steel-600 before:opacity-0 before:content-['#'] hover:underline group-hover:before:opacity-100 group-data-[hl]:before:opacity-100" href="${esc(classUrl(c, n))}">${
+            `<td class="px-3 py-1 align-top"><a class="font-bold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 before:mr-0.5 before:text-steel-700 dark:before:text-steel-600 before:opacity-0 before:content-['#'] hover:underline group-hover:before:opacity-100 group-data-[hl]:before:opacity-100" href="${esc(classUrl(c, n))}">${
               esc(n)
             }</a></td><td class="w-px whitespace-nowrap px-3 py-1 align-top text-steel-700 dark:text-steel-600">${hex(o)}</td></tr>`,
         )
@@ -217,7 +217,7 @@ function classHtml(
         .map(
           ([n, r, ps]) =>
             `<tr id="${esc(n)}()" class="group data-[hl]:bg-straw-100 dark:data-[hl]:bg-straw-900 border-t border-steel-500 first:border-t-0 even:bg-steel-50 dark:border-ink-500 dark:even:bg-ink-900"><td class="w-px whitespace-nowrap px-3 py-1 text-right align-top">${r ? tstr(r) : "void"}</td>` +
-            `<td class="px-3 py-1 align-top"><a class="font-bold before:mr-0.5 before:text-steel-700 dark:before:text-steel-600 before:opacity-0 before:content-['#'] hover:underline group-hover:before:opacity-100 group-data-[hl]:before:opacity-100" href="${esc(classUrl(c, `${n}()`))}">${
+            `<td class="px-3 py-1 align-top"><a class="font-bold focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 before:mr-0.5 before:text-steel-700 dark:before:text-steel-600 before:opacity-0 before:content-['#'] hover:underline group-hover:before:opacity-100 group-data-[hl]:before:opacity-100" href="${esc(classUrl(c, `${n}()`))}">${
               esc(n)
             }</a>` +
             `(${
@@ -313,7 +313,7 @@ function showHome() {
     native
       .map(
         ([p, n]) =>
-          `<tr class="border-t border-steel-500 first:border-t-0 even:bg-steel-50 dark:border-ink-500 dark:even:bg-ink-900"><td class="px-3 py-1 align-top"><a class="text-azure-700 hover:underline dark:text-azure-300" href="${esc(pkgUrl(p))}">${
+          `<tr class="border-t border-steel-500 first:border-t-0 even:bg-steel-50 dark:border-ink-500 dark:even:bg-ink-900"><td class="px-3 py-1 align-top"><a class="text-azure-700 hover:underline dark:text-azure-300 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="${esc(pkgUrl(p))}">${
             esc(p)
           }</a></td><td class="w-px whitespace-nowrap px-3 py-1 align-top text-steel-700 dark:text-steel-600">${n.toLocaleString()}</td></tr>`,
       )
@@ -327,7 +327,7 @@ function notFound() {
   markActive();
   setTitle("Not found");
   $("#main").innerHTML =
-    `<h1 class="mb-4 font-serif text-3xl font-bold">Not found</h1><p class="my-4 font-serif">Nothing exists at this address. <a class="text-azure-700 hover:underline dark:text-azure-300" href=".">Back to overview</a></p>`;
+    `<h1 class="mb-4 font-serif text-3xl font-bold">Not found</h1><p class="my-4 font-serif">Nothing exists at this address. <a class="text-azure-700 hover:underline dark:text-azure-300 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href=".">Back to overview</a></p>`;
 }
 
 function route() {
@@ -354,7 +354,7 @@ function navigate(href: string) {
 
 function item(c: Cls): string {
   return (
-    `<a class="group block truncate px-3 py-px hover:bg-steel-300 aria-[current]:bg-steel-300 aria-[current]:font-bold dark:hover:bg-ink-600 dark:aria-[current]:bg-ink-600" href="${esc(classUrl(c))}" data-i="${c.i}" title="${esc(c.path)}">` +
+    `<a class="group block truncate focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 px-3 py-px hover:bg-steel-300 aria-[current]:bg-steel-300 aria-[current]:font-bold dark:hover:bg-ink-600 dark:aria-[current]:bg-ink-600" href="${esc(classUrl(c))}" data-i="${c.i}" title="${esc(c.path)}">` +
     `<span class="mr-1.5 inline-block w-4 rounded-xs bg-steel-300 text-center text-xs group-aria-[current]:bg-white dark:bg-ink-600 dark:group-aria-[current]:bg-ink-950 text-steel-700 dark:text-steel-600">${c.struct ? "S" : "C"}</span>${esc(c.name)}</a>`
   );
 }
@@ -397,7 +397,7 @@ async function renderList() {
     if (++n > 200) break;
     const m = idx.k[i] === "m";
     mh +=
-      `<a class="group block truncate px-3 py-px hover:bg-steel-300 aria-[current]:bg-steel-300 aria-[current]:font-bold dark:hover:bg-ink-600 dark:aria-[current]:bg-ink-600" href="${esc(classUrl(c, m ? `${idx.n[i]}()` : idx.n[i]))}" title="${
+      `<a class="group block truncate focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 px-3 py-px hover:bg-steel-300 aria-[current]:bg-steel-300 aria-[current]:font-bold dark:hover:bg-ink-600 dark:aria-[current]:bg-ink-600" href="${esc(classUrl(c, m ? `${idx.n[i]}()` : idx.n[i]))}" title="${
         esc(c.path)
       }">` +
       `<span class="mr-1.5 inline-block w-4 rounded-xs bg-steel-300 text-center text-xs group-aria-[current]:bg-white dark:bg-ink-600 dark:group-aria-[current]:bg-ink-950 text-steel-700 dark:text-steel-600">${m ? "m" : "f"}</span>${esc(c.name)}.${
@@ -420,7 +420,7 @@ function syncQuery() {
 function stamp() {
   const version = meta.version ? `Server ${esc(meta.version)}` : "";
   const commit = meta.repo && meta.commit
-    ? `<a class="hover:underline" href="https://github.com/${esc(meta.repo)}/commit/${
+    ? `<a class="hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="https://github.com/${esc(meta.repo)}/commit/${
       esc(meta.commit)
     }">${esc(meta.commit.slice(0, 7))}</a>`
     : "";
