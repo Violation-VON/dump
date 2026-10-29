@@ -323,7 +323,7 @@ function notFound() {
   markActive();
   setTitle("Not found");
   $("#main").innerHTML =
-    `<h1>Not found</h1><p>No class or package at this address. <a href=".">Back to overview</a></p>`;
+    `<h1>Not found</h1><p>Nothing exists at this address. <a href=".">Back to overview</a></p>`;
 }
 
 function route() {
@@ -340,7 +340,7 @@ function route() {
     return c ? showClass(c, id) : notFound();
   }
   if (path.startsWith("p/")) return showPackage(`/${path.slice(2)}`);
-  return showHome();
+  return path === "" || path === "index.html" ? showHome() : notFound();
 }
 
 function navigate(href: string) {
