@@ -92,7 +92,6 @@ async function writeSite(base: string, build: string) {
   });
   await write("dist/index.html", html);
   await write("dist/404.html", html);
-  await Deno.copyFile("src/style.css", "dist/style.css");
 }
 
 const dump = await findDump();

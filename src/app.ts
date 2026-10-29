@@ -63,7 +63,8 @@ const ePath = (p: string) => encodeURI(p).replace(/[#?]/g, encodeURIComponent);
 const classUrl = (c: Cls, id?: string) =>
   `c${ePath(c.path)}${id ? `#${encodeURIComponent(id)}` : ""}`;
 const pkgUrl = (p: string) => `p${ePath(p)}`;
-const link = (c: Cls) => `<a href="${esc(classUrl(c))}">${esc(c.name)}</a>`;
+const link = (c: Cls) =>
+  `<a class="text-blue-700 hover:underline dark:text-blue-300" href="${esc(classUrl(c))}">${esc(c.name)}</a>`;
 const hex = (n: number) => `0x${n.toString(16).toUpperCase()}`;
 const isNative = (c: Cls) => c.path.startsWith("/Script/");
 const pkgOf = (c: Cls) => meta.pk[c.pk];
@@ -130,12 +131,12 @@ function markActive() {
 
 function focusMember(id: string) {
   document
-    .querySelectorAll("tr.hl")
-    .forEach((r) => r.classList.remove("hl"));
+    .querySelectorAll("tr[data-hl]")
+    .forEach((r) => r.removeAttribute("data-hl"));
   if (!id) return;
   const el = document.getElementById(id);
   if (!el) return;
-  el.classList.add("hl");
+  el.setAttribute("data-hl", "");
   el.scrollIntoView({ block: "center" });
 }
 
@@ -147,18 +148,22 @@ function inheritedHtml(chain: Cls[], loaded: Members[]): string {
     const names = (list: { 0: string }[], suffix: string) =>
       list
         .map((x) =>
-          `<a href="${esc(classUrl(a, x[0] + suffix))}">${esc(x[0])}</a>`
+          `<a class="text-blue-700 hover:underline dark:text-blue-300" href="${esc(classUrl(a, x[0] + suffix))}">${
+            esc(x[0])
+          }</a>`
         )
         .join(", ");
     h +=
-      `<details><summary>Inherited from ${
+      `<details class="my-2 text-sm"><summary class="cursor-pointer font-sans font-semibold">Inherited from ${
         esc(a.name)
       } (${mm.f.length} fields, ${mm.m.length} methods)</summary>` +
-      (mm.f.length ? `<p><b>Fields:</b> ${names(mm.f, "")}</p>` : "") +
-      (mm.m.length ? `<p><b>Methods:</b> ${names(mm.m, "()")}</p>` : "") +
+      (mm.f.length ? `<p class="wrap-anywhere my-1.5 ml-4 font-mono"><b>Fields:</b> ${names(mm.f, "")}</p>` : "") +
+      (mm.m.length ? `<p class="wrap-anywhere my-1.5 ml-4 font-mono"><b>Methods:</b> ${names(mm.m, "()")}</p>` : "") +
       "</details>";
   });
-  return h ? `<h2>Inherited members</h2><div class="tw inh">${h}</div>` : "";
+  return h
+    ? `<h2 class="mt-6 rounded-t-sm bg-slate-600 px-3 py-1.5 font-sans text-sm font-bold text-white dark:bg-slate-700 dark:text-slate-100">Inherited members</h2><div class="overflow-x-auto border border-t-0 border-slate-300 dark:border-slate-800 px-3 py-1.5">${h}</div>`
+    : "";
 }
 
 function classHtml(
@@ -182,37 +187,37 @@ function classHtml(
     )
     .join("\n");
   const kids = children.get(c.i) || [];
-  let h = `<div class="pkg"><a href="${esc(pkgUrl(pkgOf(c)))}">${
+  let h = `<div class="wrap-anywhere font-mono text-sm text-slate-500 dark:text-slate-400"><a class="text-blue-700 hover:underline dark:text-blue-300" href="${esc(pkgUrl(pkgOf(c)))}">${
     esc(pkgOf(c))
   }</a></div>`;
-  h += `<h1>${c.struct ? "Struct" : "Class"} ${esc(c.name)}</h1>` +
-    `<pre class="tree">${tree}</pre>`;
+  h += `<h1 class="mb-4 text-3xl font-bold">${c.struct ? "Struct" : "Class"} ${esc(c.name)}</h1>` +
+    `<pre class="overflow-auto border border-slate-300 bg-slate-50 px-4 py-3 font-mono text-sm dark:border-slate-800 dark:bg-slate-900">${tree}</pre>`;
   if (kids.length) {
-    h += `<div class="sub"><b>${
+    h += `<div class="my-3 text-sm"><b>${
       c.struct ? "Child structs" : "Direct subclasses"
     }:</b> ${kids.slice(0, 60).map(link).join(", ")}`;
     h += kids.length > 60 ? ` and ${kids.length - 60} more</div>` : "</div>";
   }
   if (mm.f.length) {
-    h += `<h2>Field summary</h2><div class="tw"><table>${
+    h += `<h2 class="mt-6 rounded-t-sm bg-slate-600 px-3 py-1.5 font-sans text-sm font-bold text-white dark:bg-slate-700 dark:text-slate-100">Field summary</h2><div class="overflow-x-auto border border-t-0 border-slate-300 dark:border-slate-800"><table class="w-full font-mono text-sm">${
       mm.f
         .map(
           ([n, t, o]) =>
-            `<tr id="${esc(n)}"><td class="t">${tstr(t)}</td>` +
-            `<td><a class="anc" href="${esc(classUrl(c, n))}">${
+            `<tr id="${esc(n)}" class="group data-[hl]:bg-yellow-100 dark:data-[hl]:bg-yellow-950 border-t border-slate-300 first:border-t-0 even:bg-slate-50 dark:border-slate-800 dark:even:bg-slate-900"><td class="w-px whitespace-nowrap px-3 py-1 text-right align-top">${tstr(t)}</td>` +
+            `<td class="px-3 py-1 align-top"><a class="font-bold before:mr-0.5 before:text-slate-500 before:opacity-0 before:content-['#'] hover:underline group-hover:before:opacity-100 group-data-[hl]:before:opacity-100" href="${esc(classUrl(c, n))}">${
               esc(n)
-            }</a></td><td class="o">${hex(o)}</td></tr>`,
+            }</a></td><td class="w-px whitespace-nowrap px-3 py-1 align-top text-slate-500 dark:text-slate-400">${hex(o)}</td></tr>`,
         )
         .join("")
     }</table></div>`;
   }
   if (mm.m.length) {
-    h += `<h2>Method summary</h2><div class="tw"><table>${
+    h += `<h2 class="mt-6 rounded-t-sm bg-slate-600 px-3 py-1.5 font-sans text-sm font-bold text-white dark:bg-slate-700 dark:text-slate-100">Method summary</h2><div class="overflow-x-auto border border-t-0 border-slate-300 dark:border-slate-800"><table class="w-full font-mono text-sm">${
       mm.m
         .map(
           ([n, r, ps]) =>
-            `<tr id="${esc(n)}()"><td class="t">${r ? tstr(r) : "void"}</td>` +
-            `<td><a class="anc" href="${esc(classUrl(c, `${n}()`))}">${
+            `<tr id="${esc(n)}()" class="group data-[hl]:bg-yellow-100 dark:data-[hl]:bg-yellow-950 border-t border-slate-300 first:border-t-0 even:bg-slate-50 dark:border-slate-800 dark:even:bg-slate-900"><td class="w-px whitespace-nowrap px-3 py-1 text-right align-top">${r ? tstr(r) : "void"}</td>` +
+            `<td class="px-3 py-1 align-top"><a class="font-bold before:mr-0.5 before:text-slate-500 before:opacity-0 before:content-['#'] hover:underline group-hover:before:opacity-100 group-data-[hl]:before:opacity-100" href="${esc(classUrl(c, `${n}()`))}">${
               esc(n)
             }</a>` +
             `(${
@@ -223,7 +228,7 @@ function classHtml(
     }</table></div>`;
   }
   if (!mm.f.length && !mm.m.length) {
-    h += '<p class="muted">Nothing declared on this type.</p>';
+    h += '<p class="my-4 text-slate-500 dark:text-slate-400">Nothing declared on this type.</p>';
   }
   return h + inheritedHtml(ancestors, loaded);
 }
@@ -233,7 +238,7 @@ async function showClass(c: Cls, id: string) {
   if (current !== c) {
     current = c;
     setTitle(c.name);
-    main.innerHTML = '<p class="muted">Loading…</p>';
+    main.innerHTML = '<p class="my-4 text-slate-500 dark:text-slate-400">Loading…</p>';
     markActive();
     const ancestors: Cls[] = [];
     for (
@@ -252,7 +257,7 @@ async function showClass(c: Cls, id: string) {
       main.scrollTop = 0;
     } catch (e) {
       if (current === c) {
-        main.innerHTML = `<p>Failed to load members: ${
+        main.innerHTML = `<p class="my-4">Failed to load members: ${
           esc((e as Error).message)
         }</p>`;
       }
@@ -270,15 +275,15 @@ function showPackage(pkg: string) {
   setTitle(pkg);
   const main = $("#main");
   main.innerHTML =
-    `<div class="pkg">Package</div><h1>${esc(pkg || "(none)")}</h1>` +
-    `<h2>Classes and structs (${list.length.toLocaleString()})</h2><div class="tw"><table>` +
+    `<div class="wrap-anywhere font-mono text-sm text-slate-500 dark:text-slate-400">Package</div><h1 class="mb-4 text-3xl font-bold">${esc(pkg || "(none)")}</h1>` +
+    `<h2 class="mt-6 rounded-t-sm bg-slate-600 px-3 py-1.5 font-sans text-sm font-bold text-white dark:bg-slate-700 dark:text-slate-100">Classes and structs (${list.length.toLocaleString()})</h2><div class="overflow-x-auto border border-t-0 border-slate-300 dark:border-slate-800"><table class="w-full font-mono text-sm">` +
     list
       .map(
         (c) =>
-          `<tr><td class="t">${c.struct ? "struct" : "class"}</td><td>${
+          `<tr class="border-t border-slate-300 first:border-t-0 even:bg-slate-50 dark:border-slate-800 dark:even:bg-slate-900"><td class="w-px whitespace-nowrap px-3 py-1 text-right align-top">${c.struct ? "struct" : "class"}</td><td class="px-3 py-1 align-top">${
             link(c)
           }</td>` +
-          `<td class="o">${
+          `<td class="w-px whitespace-nowrap px-3 py-1 align-top text-slate-500 dark:text-slate-400">${
             classes[c.sup] ? `extends ${link(classes[c.sup])}` : ""
           }</td></tr>`,
       )
@@ -297,21 +302,20 @@ function showHome() {
     .sort((a, b) => b[1] - a[1]);
   const structs = classes.filter((c) => c.struct).length;
   const main = $("#main");
-  main.innerHTML = `<div class="intro"><h1>${esc(name)}</h1>` +
-    `<div class="stats"><span><b>${
+  main.innerHTML = `<h1 class="mb-4 text-3xl font-bold">${esc(name)}</h1>` +
+    `<div class="mt-3 mb-2 flex flex-wrap gap-x-8 gap-y-2 font-sans text-sm"><span><b class="block text-xl">${
       (classes.length - structs).toLocaleString()
     }</b>classes</span>` +
-    `<span><b>${structs.toLocaleString()}</b>structs</span>` +
-    `<span><b>${meta.counts.fields.toLocaleString()}</b>fields</span>` +
-    `<span><b>${meta.counts.methods.toLocaleString()}</b>methods</span></div>` +
-    "</div>" +
-    `<h2>Native packages (${native.length})</h2><div class="tw"><table>` +
+    `<span><b class="block text-xl">${structs.toLocaleString()}</b>structs</span>` +
+    `<span><b class="block text-xl">${meta.counts.fields.toLocaleString()}</b>fields</span>` +
+    `<span><b class="block text-xl">${meta.counts.methods.toLocaleString()}</b>methods</span></div>` +
+    `<h2 class="mt-6 rounded-t-sm bg-slate-600 px-3 py-1.5 font-sans text-sm font-bold text-white dark:bg-slate-700 dark:text-slate-100">Native packages (${native.length})</h2><div class="overflow-x-auto border border-t-0 border-slate-300 dark:border-slate-800"><table class="w-full font-mono text-sm">` +
     native
       .map(
         ([p, n]) =>
-          `<tr><td><a href="${esc(pkgUrl(p))}">${
+          `<tr class="border-t border-slate-300 first:border-t-0 even:bg-slate-50 dark:border-slate-800 dark:even:bg-slate-900"><td class="px-3 py-1 align-top"><a class="text-blue-700 hover:underline dark:text-blue-300" href="${esc(pkgUrl(p))}">${
             esc(p)
-          }</a></td><td class="o">${n.toLocaleString()}</td></tr>`,
+          }</a></td><td class="w-px whitespace-nowrap px-3 py-1 align-top text-slate-500 dark:text-slate-400">${n.toLocaleString()}</td></tr>`,
       )
       .join("") +
     "</table></div>";
@@ -323,7 +327,7 @@ function notFound() {
   markActive();
   setTitle("Not found");
   $("#main").innerHTML =
-    `<h1>Not found</h1><p>Nothing exists at this address. <a href=".">Back to overview</a></p>`;
+    `<h1 class="mb-4 text-3xl font-bold">Not found</h1><p class="my-4">Nothing exists at this address. <a class="text-blue-700 hover:underline dark:text-blue-300" href=".">Back to overview</a></p>`;
 }
 
 function route() {
@@ -350,8 +354,8 @@ function navigate(href: string) {
 
 function item(c: Cls): string {
   return (
-    `<a href="${esc(classUrl(c))}" data-i="${c.i}" title="${esc(c.path)}">` +
-    `<span class="b">${c.struct ? "S" : "C"}</span>${esc(c.name)}</a>`
+    `<a class="group block truncate px-3 py-px hover:bg-slate-200 aria-[current]:bg-slate-200 aria-[current]:font-bold dark:hover:bg-slate-800 dark:aria-[current]:bg-slate-800" href="${esc(classUrl(c))}" data-i="${c.i}" title="${esc(c.path)}">` +
+    `<span class="mr-1.5 inline-block w-4 rounded-xs bg-slate-200 text-center text-xs group-aria-[current]:bg-white dark:bg-slate-800 dark:group-aria-[current]:bg-slate-950 text-slate-500 dark:text-slate-400">${c.struct ? "S" : "C"}</span>${esc(c.name)}</a>`
   );
 }
 
@@ -371,7 +375,7 @@ async function renderList() {
       h += item(c);
     }
   }
-  h = `<h3>Types (${total.toLocaleString()}${
+  h = `<h3 class="mx-3 mt-3 mb-1 font-sans text-xs font-bold text-slate-500 dark:text-slate-400">Types (${total.toLocaleString()}${
     total > shown ? `, showing ${shown}` : ""
   })</h3>${h}`;
   $("#list").innerHTML = h;
@@ -380,7 +384,7 @@ async function renderList() {
 
   $("#list").insertAdjacentHTML(
     "beforeend",
-    '<div id="mem"><h3>Members</h3><a>Searching…</a></div>',
+    '<div id="mem"><h3 class="mx-3 mt-3 mb-1 font-sans text-xs font-bold text-slate-500 dark:text-slate-400">Members</h3><a class="block truncate px-3 py-px hover:bg-slate-200 aria-[current]:bg-slate-200 aria-[current]:font-bold dark:hover:bg-slate-800 dark:aria-[current]:bg-slate-800">Searching…</a></div>',
   );
   const idx = await getSearch();
   if (token !== listToken) return;
@@ -393,16 +397,16 @@ async function renderList() {
     if (++n > 200) break;
     const m = idx.k[i] === "m";
     mh +=
-      `<a href="${esc(classUrl(c, m ? `${idx.n[i]}()` : idx.n[i]))}" title="${
+      `<a class="group block truncate px-3 py-px hover:bg-slate-200 aria-[current]:bg-slate-200 aria-[current]:font-bold dark:hover:bg-slate-800 dark:aria-[current]:bg-slate-800" href="${esc(classUrl(c, m ? `${idx.n[i]}()` : idx.n[i]))}" title="${
         esc(c.path)
       }">` +
-      `<span class="b">${m ? "m" : "f"}</span>${esc(c.name)}.${
+      `<span class="mr-1.5 inline-block w-4 rounded-xs bg-slate-200 text-center text-xs group-aria-[current]:bg-white dark:bg-slate-800 dark:group-aria-[current]:bg-slate-950 text-slate-500 dark:text-slate-400">${m ? "m" : "f"}</span>${esc(c.name)}.${
         esc(idx.n[i])
       }</a>`;
   }
-  $("#mem").innerHTML = `<h3>${
+  $("#mem").innerHTML = `<h3 class="mx-3 mt-3 mb-1 font-sans text-xs font-bold text-slate-500 dark:text-slate-400">${
     n > 200 ? "Members (first 200)" : "Members"
-  }</h3>${mh || "<a>No matches</a>"}`;
+  }</h3>${mh || '<a class="block truncate px-3 py-px hover:bg-slate-200 aria-[current]:bg-slate-200 aria-[current]:font-bold dark:hover:bg-slate-800 dark:aria-[current]:bg-slate-800">No matches</a>'}`;
 }
 
 function syncQuery() {
@@ -416,7 +420,7 @@ function syncQuery() {
 function stamp() {
   const version = meta.version ? `Server ${esc(meta.version)}` : "";
   const commit = meta.repo && meta.commit
-    ? `<a href="https://github.com/${esc(meta.repo)}/commit/${
+    ? `<a class="hover:underline" href="https://github.com/${esc(meta.repo)}/commit/${
       esc(meta.commit)
     }">${esc(meta.commit.slice(0, 7))}</a>`
     : "";
@@ -497,5 +501,5 @@ $("#nat").addEventListener("change", () => {
 addEventListener("popstate", route);
 
 init().catch((e: Error) => {
-  $("#main").innerHTML = `<h1>Failed to load</h1><p>${esc(e.message)}</p>`;
+  $("#main").innerHTML = `<h1 class="mb-4 text-3xl font-bold">Failed to load</h1><p class="my-4">${esc(e.message)}</p>`;
 });

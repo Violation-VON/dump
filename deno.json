@@ -1,11 +1,14 @@
 {
   "license": "GPL-3.0-only",
   "tasks": {
-    "build": "deno run --allow-read --allow-write=dist --allow-env --v8-flags=--max-old-space-size=6144 scripts/build.ts && deno bundle --platform=browser --minify --output=dist/app.js src/app.ts",
+    "build": "deno run --allow-read --allow-write=dist --allow-env --v8-flags=--max-old-space-size=6144 scripts/build.ts && deno run -A npm:@tailwindcss/cli@^4.1.0 --cwd src --input style.css --output ../dist/style.css --minify && deno bundle --platform=browser --minify --output=dist/app.js src/app.ts",
     "serve": "deno run --allow-net --allow-read=dist --allow-env scripts/serve.ts"
   },
+  "nodeModulesDir": "auto",
   "imports": {
-    "mustache": "npm:mustache@4.2.0"
+    "mustache": "npm:mustache@4.2.0",
+    "tailwindcss": "npm:tailwindcss@^4.1.0",
+    "@tailwindcss/cli": "npm:@tailwindcss/cli@^4.1.0"
   },
   "compilerOptions": {
     "lib": [
