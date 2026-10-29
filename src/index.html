@@ -11,28 +11,28 @@
     <script type="module" src="app.js?v={{build}}"></script>
   </head>
   <body
-    class="flex h-full flex-col bg-white text-slate-800 before:fixed before:inset-x-0 before:top-0 before:z-10 before:h-[env(safe-area-inset-top)] before:bg-slate-600 before:content-[''] dark:bg-slate-950 dark:text-slate-200 dark:before:bg-slate-700">
+    class="flex h-full flex-col bg-white text-ink-700 dark:bg-ink-950 dark:text-steel-400">
     <header
-      class="flex flex-wrap items-center gap-4 bg-slate-600 px-4 py-2.5 font-sans text-sm text-white dark:bg-slate-700 dark:text-slate-100">
+      class="flex flex-wrap items-center gap-4 bg-ink-300 px-4 py-2.5 text-sm text-white dark:bg-ink-400 dark:text-steel-200">
       <a class="text-lg font-bold hover:underline" href=".">{{ name }}</a>
       <span id="stamp" class="ml-auto opacity-85 max-md:ml-0"></span>
     </header>
     <div class="flex min-h-0 flex-1 max-md:flex-col">
       <aside
-        class="flex w-80 shrink-0 flex-col border-r border-slate-300 bg-slate-100 max-md:h-2/5 max-md:w-auto max-md:border-r-0 max-md:border-b dark:border-slate-800 dark:bg-slate-900">
+        class="flex w-80 shrink-0 flex-col border-r border-steel-500 bg-steel-100 max-md:h-2/5 max-md:w-auto max-md:border-r-0 max-md:border-b dark:border-ink-500 dark:bg-ink-800">
         <div
-          class="border-b border-slate-300 p-2.5 font-sans text-sm dark:border-slate-800">
+          class="border-b border-steel-500 p-2.5 text-sm dark:border-ink-500">
           <input type="search" id="q"
             placeholder="Search types and members ( / )" autocomplete="off"
             aria-label="Search"
-            class="w-full rounded-sm border border-slate-300 bg-white px-2 py-1.5 dark:border-slate-800 dark:bg-slate-950">
-          <label class="mt-1.5 block text-slate-500 dark:text-slate-400"><input
+            class="w-full rounded-sm border border-steel-500 bg-white px-2 py-1.5 dark:border-ink-500 dark:bg-ink-950">
+          <label class="mt-1.5 block text-steel-700 dark:text-steel-600"><input
               type="checkbox" id="nat" checked class="mr-1"> Native only (/Script)</label>
         </div>
         <div id="list" class="flex-1 overflow-auto py-1.5 font-mono text-sm"></div>
       </aside>
       <main id="main" class="min-w-0 flex-1 overflow-auto px-8 pt-5 pb-16 max-md:p-4">
-        <p class="my-4 text-slate-500 dark:text-slate-400">Loading…</p>
+        <p class="my-4 font-serif text-steel-700 dark:text-steel-600">Loading…</p>
       </main>
     </div>
   </body>
