@@ -28,10 +28,6 @@ export type ClassRow = [
 ];
 
 export interface Meta {
-  build: string;
-  version: string;
-  commit: string;
-  repo: string;
   source: string;
   lines: number;
   counts: { fields: number; methods: number };

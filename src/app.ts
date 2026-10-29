@@ -10,8 +10,22 @@ interface Cls {
   path: string;
 }
 
-const { build = "", name = "" } = document.documentElement.dataset;
-const base = new URL(document.baseURI).pathname;
+const name = document.title;
+const base = import.meta.env.BASE_URL;
+
+const metaUrls = import.meta.glob<string>("./data/meta.json", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
+const searchUrls = import.meta.glob<string>("./data/search.json", {
+  query: "?url",
+  import: "default",
+});
+const shardUrls = import.meta.glob<string>("./data/m/*.json", {
+  query: "?url",
+  import: "default",
+});
 
 const $ = <T extends HTMLElement = HTMLElement>(selector: string): T =>
   document.querySelector<T>(selector)!;
@@ -34,7 +48,7 @@ const pkgClasses = new Map<number, Cls[]>();
 let current: Cls | null = null;
 let listToken = 0;
 let searchIndex: Promise<SearchIndex> | null = null;
-let timer: number | undefined;
+let timer: ReturnType<typeof setTimeout> | undefined;
 const shards = new Map<number, Promise<Record<number, Members>>>();
 
 function readPref(key: string): string | null {
@@ -53,9 +67,9 @@ function writePref(key: string, value: string) {
   }
 }
 
-async function fetchJson<T>(file: string): Promise<T> {
-  const r = await fetch(`data/${file}?v=${build}`);
-  if (!r.ok) throw new Error(`${file}: ${r.status}`);
+async function fetchJson<T>(url: string): Promise<T> {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`${url}: ${r.status}`);
   return r.json();
 }
 
@@ -97,10 +111,12 @@ function tstr(d: TypeDesc): string {
 function loadShard(n: number): Promise<Record<number, Members>> {
   let shard = shards.get(n);
   if (!shard) {
-    shard = fetchJson<Record<number, Members>>(`m/${n}.json`).catch((e) => {
-      shards.delete(n);
-      throw e;
-    });
+    shard = shardUrls[`./data/m/${n}.json`]()
+      .then((url) => fetchJson<Record<number, Members>>(url))
+      .catch((e) => {
+        shards.delete(n);
+        throw e;
+      });
     shards.set(n, shard);
   }
   return shard;
@@ -113,7 +129,9 @@ async function membersOf(c: Cls): Promise<Members> {
 }
 
 function getSearch(): Promise<SearchIndex> {
-  searchIndex ??= fetchJson<SearchIndex>("search.json");
+  searchIndex ??= searchUrls["./data/search.json"]().then((url) =>
+    fetchJson<SearchIndex>(url)
+  );
   return searchIndex;
 }
 
@@ -462,17 +480,20 @@ function syncQuery() {
 }
 
 function stamp() {
-  const version = meta.version ? `Server ${esc(meta.version)}` : "";
-  const commit = meta.repo && meta.commit
+  const { version, repo, commit: sha } = __BUILD__;
+  const server = version ? `Server ${esc(version)}` : "";
+  const commit = repo && sha
     ? `<a class="hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="https://github.com/${
-      esc(meta.repo)
-    }/commit/${esc(meta.commit)}">${esc(meta.commit.slice(0, 7))}</a>`
+      esc(repo)
+    }/commit/${esc(sha)}">${esc(sha.slice(0, 7))}</a>`
     : "";
-  $("#stamp").innerHTML = [version, commit].filter(Boolean).join(" · ");
+  $("#stamp").innerHTML = [server, commit].filter(Boolean).join(" · ");
 }
 
 async function init() {
-  meta = await fetchJson<Meta>("meta.json");
+  const metaUrl = metaUrls["./data/meta.json"];
+  if (!metaUrl) throw new Error("Data not found. Run deno task data.");
+  meta = await fetchJson<Meta>(metaUrl);
   classes = meta.c.map(([n, pk, sup, st, shard], i) => ({
     i,
     name: n,

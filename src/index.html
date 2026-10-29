@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" data-build="{{build}}" data-name="{{name}}"
+<html lang="en"
   class="h-full scroll-pt-[env(safe-area-inset-top)] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] dark:scheme-dark">
   <head>
     <meta charset="utf-8">
     <meta name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <base href="{{{base}}}">
-    <title>{{ name }}</title>
-    <link rel="stylesheet" href="style.css?v={{build}}">
-    <script type="module" src="app.js?v={{build}}"></script>
+    <title>Evrima Object Dump</title>
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./app.ts"></script>
   </head>
   <body
     class="flex h-full flex-col bg-white text-ink-700 dark:bg-ink-950 dark:text-steel-400">
@@ -16,7 +15,7 @@
       class="flex flex-wrap items-center gap-4 bg-ink-300 px-4 py-2.5 text-sm text-white dark:bg-ink-400 dark:text-steel-200">
       <a
         class="text-lg font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300"
-        href=".">{{ name }}</a>
+        href=".">Evrima Object Dump</a>
       <span id="stamp" class="ml-auto opacity-85 max-md:ml-0"></span>
     </header>
     <div class="flex min-h-0 flex-1 max-md:flex-col">
