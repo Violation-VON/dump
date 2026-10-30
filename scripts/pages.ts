@@ -1,7 +1,7 @@
 import { dirname, join } from "node:path";
 import { xxhash128 } from "hash-wasm";
 import Mustache from "mustache";
-import { ICONS, type Page, Renderer } from "../src/render.ts";
+import { type Page, Renderer } from "../src/render.ts";
 import { classUrl, esc, pkgUrl } from "../src/shared.ts";
 import type { Members, Meta } from "../src/types.ts";
 
@@ -84,9 +84,6 @@ async function write(path: string, text: string) {
   await Deno.writeTextFile(file, text);
 }
 
-const icon = (letter: string) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#4f6d8f"/><text x="16" y="24" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#fff">${letter}</text></svg>`;
-
 function breadcrumbs(crumbs: Page["crumbs"]): string {
   if (!siteUrl || !crumbs.length) return "";
   return JSON.stringify({
@@ -126,8 +123,9 @@ let skipped = 0;
 let chars = 0;
 let batch: Promise<void>[] = [];
 for (const { file, url, page } of pages()) {
-  const cardUrl = page.card && url !== null ? `og/${url}.svg` : "";
-  const cardHash = page.card ? await assetHash(page.card) : "";
+  const cardUrl = page.card && url !== null
+    ? `assets/og/${url}-${await assetHash(page.card)}.svg`
+    : "";
   const html = Mustache.render(template, {
     ...stamp,
     name: NAME,
@@ -135,10 +133,10 @@ for (const { file, url, page } of pages()) {
     description: page.description,
     canonical: siteUrl && url !== null ? `${siteUrl}/${url}` : "",
     noindex: !page.indexable,
-    icon: `icons/${page.icon.toLowerCase()}.svg`,
+    icon: { [page.icon.toLowerCase()]: true },
     image: siteUrl && cardUrl
       ? `https://wsrv.nl/?url=${
-        encodeURIComponent(`${siteUrl}/${cardUrl}?v=${cardHash}`)
+        encodeURIComponent(`${siteUrl}/${cardUrl}`)
       }&output=webp&ll&w=1200&h=600`
       : "",
     jsonld: breadcrumbs(page.crumbs),
@@ -168,9 +166,6 @@ if (siteUrl) {
   );
 }
 
-for (const letter of ICONS) {
-  await write(`icons/${letter.toLowerCase()}.svg`, icon(letter));
-}
 if (indexNowKey) await write(`${indexNowKey}.txt`, indexNowKey);
 
 console.log(

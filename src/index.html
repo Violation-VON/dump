@@ -11,7 +11,10 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="{{ title }}">
     {{#description}}<meta property="og:description" content="{{ description }}">{{/description}}
-    <link rel="icon" type="image/svg+xml" href="{{ icon }}">
+    {{#icon.c}}<link rel="icon" type="image/svg+xml" href="./icons/c.svg">{{/icon.c}}
+    {{#icon.s}}<link rel="icon" type="image/svg+xml" href="./icons/s.svg">{{/icon.s}}
+    {{#icon.p}}<link rel="icon" type="image/svg+xml" href="./icons/p.svg">{{/icon.p}}
+    {{#icon.e}}<link rel="icon" type="image/svg+xml" href="./icons/e.svg">{{/icon.e}}
     {{#canonical}}<meta property="og:url" content="{{ canonical }}">{{/canonical}}
     {{#canonical}}<link rel="canonical" href="{{ canonical }}">{{/canonical}}
     {{#image}}<meta property="og:image" content="{{ image }}">
