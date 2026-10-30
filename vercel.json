@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "SITE_URL=https://$VERCEL_PROJECT_PRODUCTION_URL GITHUB_SHA=$VERCEL_GIT_COMMIT_SHA GITHUB_REPOSITORY=$VERCEL_GIT_REPO_OWNER/$VERCEL_GIT_REPO_SLUG npx -y deno task build",
+  "buildCommand": "SITE_URL=https://$VERCEL_PROJECT_PRODUCTION_URL GITHUB_SHA=$VERCEL_GIT_COMMIT_SHA GITHUB_REPOSITORY=$VERCEL_GIT_REPO_OWNER/$VERCEL_GIT_REPO_SLUG npx -y deno task build && npx -y deno task indexnow",
   "outputDirectory": "dist",
   "cleanUrls": true,
   "headers": [
@@ -9,7 +9,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'"
+          "value": "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; frame-ancestors 'none'"
         },
         {
           "key": "X-Content-Type-Options",

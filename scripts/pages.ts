@@ -1,6 +1,6 @@
 import { dirname, join } from "node:path";
 import Mustache from "mustache";
-import { type Page, Renderer } from "../src/render.ts";
+import { ICONS, type Page, Renderer } from "../src/render.ts";
 import { classUrl, esc, pkgUrl } from "../src/shared.ts";
 import type { Members, Meta } from "../src/types.ts";
 
@@ -11,6 +11,8 @@ const XML = '<?xml version="1.0" encoding="UTF-8"?>';
 const NS = "http://www.sitemaps.org/schemas/sitemap/0.9";
 const NAME = "Evrima Object Dump";
 
+Mustache.escape = esc;
+
 const template = await Deno.readTextFile(`${OUT}/index.html`);
 if (!template.includes("{{{main}}}")) {
   throw new Error(
@@ -19,6 +21,10 @@ if (!template.includes("{{{main}}}")) {
 }
 
 const siteUrl = (Deno.env.get("SITE_URL") ?? "").replace(/\/+$/, "");
+const indexNowKey = Deno.env.get("INDEXNOW_KEY") ?? "";
+if (indexNowKey && !/^[A-Za-z0-9-]{8,128}$/.test(indexNowKey)) {
+  throw new Error("INDEXNOW_KEY must be 8 to 128 letters, digits or dashes.");
+}
 const sha = Deno.env.get("GITHUB_SHA") ?? "";
 const repo = Deno.env.get("GITHUB_REPOSITORY") ?? "";
 const stamp = {
@@ -67,6 +73,9 @@ async function write(path: string, text: string) {
   await Deno.writeTextFile(file, text);
 }
 
+const icon = (letter: string) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#4f6d8f"/><text x="16" y="24" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="24" font-weight="700" fill="#fff">${letter}</text></svg>`;
+
 function breadcrumbs(crumbs: Page["crumbs"]): string {
   if (!siteUrl || !crumbs.length) return "";
   return JSON.stringify({
@@ -102,6 +111,7 @@ async function writeSitemaps(urls: string[]) {
 
 const urls: string[] = [];
 let count = 0;
+let skipped = 0;
 let chars = 0;
 let batch: Promise<void>[] = [];
 for (const { file, url, page } of pages()) {
@@ -111,11 +121,15 @@ for (const { file, url, page } of pages()) {
     title: page.title ? `${page.title} · ${NAME}` : NAME,
     description: page.description,
     canonical: siteUrl && url !== null ? `${siteUrl}/${url}` : "",
-    noindex: url === null,
+    noindex: !page.indexable,
+    icon: `icons/${page.icon.toLowerCase()}.svg`,
     jsonld: breadcrumbs(page.crumbs),
     main: page.main,
   });
-  if (url !== null) urls.push(`${siteUrl}/${url}`);
+  if (url !== null) {
+    if (page.indexable) urls.push(`${siteUrl}/${url}`);
+    else skipped++;
+  }
   count++;
   chars += html.length;
   batch.push(write(file, html));
@@ -133,6 +147,13 @@ if (siteUrl) {
   );
 }
 
+for (const letter of ICONS) {
+  await write(`icons/${letter.toLowerCase()}.svg`, icon(letter));
+}
+if (indexNowKey) await write(`${indexNowKey}.txt`, indexNowKey);
+
 console.log(
-  `${count.toLocaleString()} pages, ${(chars / 1e6).toFixed(1)} MB of HTML`,
+  `${count.toLocaleString()} pages, ${
+    (chars / 1e6).toFixed(1)
+  } MB of HTML, ${skipped.toLocaleString()} not indexed`,
 );

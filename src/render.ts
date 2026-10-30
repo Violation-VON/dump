@@ -10,9 +10,14 @@ export interface Cls {
   path: string;
 }
 
+export const ICONS = ["C", "S", "P", "E"] as const;
+export type Icon = (typeof ICONS)[number];
+
 export interface Page {
   title: string;
   description: string;
+  indexable: boolean;
+  icon: Icon;
   crumbs: [name: string, url: string][];
   main: string;
 }
@@ -68,15 +73,18 @@ export class Renderer {
   }
 
   public home(): Page {
-    const native = this.meta.pk
+    const sizes = this.meta.pk
       .map((p, i): [string, number] => [p, this.pkgClasses[i].length])
-      .filter(([p]) => p.startsWith("/Script/"))
       .sort((a, b) => b[1] - a[1]);
+    const native = sizes.filter(([p]) => p.startsWith("/Script/"));
+    const other = sizes.filter(([p]) => !p.startsWith("/Script/"));
     const structs = this.classes.filter((c) => c.struct).length;
     return {
       title: "",
       description:
         `${this.game} documentation of UE4SS classes, structs, fields, and methods.`,
+      indexable: true,
+      icon: "E",
       crumbs: [],
       main:
         `<h1 class="mb-3.5 font-serif text-3xl font-bold">${
@@ -88,25 +96,32 @@ export class Renderer {
         `<span><b class="block text-xl">${structs.toLocaleString()}</b>structs</span>` +
         `<span><b class="block text-xl">${this.meta.counts.fields.toLocaleString()}</b>fields</span>` +
         `<span><b class="block text-xl">${this.meta.counts.methods.toLocaleString()}</b>methods</span></div>` +
-        `<h2 class="${HEADING}">Native packages (${native.length})</h2><div class="${BOX}"><table class="w-full font-mono text-sm">` +
-        native
-          .map(
-            ([p, n]) =>
-              `<tr class="${ROW}"><td class="${CELL}"><a class="${LINK}" href="${
-                esc(pkgUrl(p))
-              }">${
-                esc(p)
-              }</a></td><td class="${DIM_CELL}">${n.toLocaleString()}</td></tr>`,
-          )
-          .join("") +
-        "</table></div>",
+        this.pkgTable("Native packages", native) +
+        (other.length ? this.pkgTable("Other packages", other) : ""),
     };
+  }
+
+  private pkgTable(title: string, list: [string, number][]): string {
+    return `<h2 class="${HEADING}">${title} (${list.length})</h2><div class="${BOX}"><table class="w-full font-mono text-sm">` +
+      list
+        .map(
+          ([p, n]) =>
+            `<tr class="${ROW}"><td class="${CELL}"><a class="${LINK}" href="${
+              esc(pkgUrl(p))
+            }">${
+              esc(p || "(none)")
+            }</a></td><td class="${DIM_CELL}">${n.toLocaleString()}</td></tr>`,
+        )
+        .join("") +
+      "</table></div>";
   }
 
   public notFound(): Page {
     return {
       title: "Not found",
       description: "",
+      indexable: false,
+      icon: "E",
       crumbs: [],
       main:
         `<h1 class="mb-3.5 font-serif text-3xl font-bold">Not found</h1><p class="my-4 font-serif">Nothing exists at this address. <a class="${LINK}" href=".">Back to overview</a></p>`,
@@ -121,6 +136,8 @@ export class Renderer {
       description: `${this.game} documentation of package ${
         pkg || "(none)"
       }: its classes and structs.`,
+      indexable: true,
+      icon: "P",
       crumbs: [[this.name, ""], [pkg || "(none)", pkgUrl(pkg)]],
       main:
         `<div class="wrap-anywhere font-mono text-sm ${MUTED}">Package</div><h1 class="mb-3.5 font-serif text-3xl font-bold">${
@@ -237,6 +254,8 @@ export class Renderer {
       description: `${this.game} documentation of ${kind} ${c.name}${
         pkg ? ` in package ${pkg}` : ""
       }${parent ? `, which extends ${parent.name}` : ""}.`,
+      indexable: mm.f.length + mm.m.length > 0,
+      icon: c.struct ? "S" : "C",
       crumbs: [
         [this.name, ""],
         [pkg || "(none)", pkgUrl(pkg)],
