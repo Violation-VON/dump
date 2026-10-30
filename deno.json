@@ -13,6 +13,7 @@
   },
   "nodeModulesDir": "auto",
   "imports": {
+    "hash-wasm": "npm:hash-wasm@^4.12.0",
     "html-minifier-terser": "npm:html-minifier-terser@^7.2.0",
     "mustache": "npm:mustache@^4.2.0",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.3.3",

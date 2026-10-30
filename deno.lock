@@ -2,6 +2,7 @@
   "version": "5",
   "specifiers": {
     "npm:@tailwindcss/vite@^4.3.3": "4.3.3_vite@8.3.5",
+    "npm:hash-wasm@^4.12.0": "4.12.0",
     "npm:html-minifier-terser@^7.2.0": "7.2.0",
     "npm:mustache@^4.2.0": "4.2.0",
     "npm:tailwindcss@^4.3.3": "4.3.3",
@@ -282,6 +283,9 @@
     },
     "graceful-fs@4.2.11": {
       "integrity": "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ=="
+    },
+    "hash-wasm@4.12.0": {
+      "integrity": "sha512-+/2B2rYLb48I/evdOIhP+K/DD2ca2fgBjp6O+GBEnCDk2e4rpeXIK8GvIyRPjTezgmWn9gmKwkQjjx6BtqDHVQ=="
     },
     "html-minifier-terser@7.2.0": {
       "integrity": "sha512-tXgn3QfqPIpGl9o+K5tpcj3/MN4SfLtsx2GWwBC3SSd0tXQGyF3gsSqad8loJgKZGM3ZxbYDd5yhiBIdWpmvLA==",
@@ -588,6 +592,7 @@
   "workspace": {
     "dependencies": [
       "npm:@tailwindcss/vite@^4.3.3",
+      "npm:hash-wasm@^4.12.0",
       "npm:html-minifier-terser@^7.2.0",
       "npm:mustache@^4.2.0",
       "npm:tailwindcss@^4.3.3",

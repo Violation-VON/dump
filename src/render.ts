@@ -19,6 +19,7 @@ export interface Page {
   indexable: boolean;
   icon: Icon;
   crumbs: [name: string, url: string][];
+  card: string | null;
   main: string;
 }
 
@@ -86,6 +87,7 @@ export class Renderer {
       indexable: true,
       icon: "E",
       crumbs: [],
+      card: null,
       main:
         `<h1 class="mb-3.5 font-serif text-3xl font-bold">${
           esc(this.name)
@@ -123,6 +125,7 @@ export class Renderer {
       indexable: false,
       icon: "E",
       crumbs: [],
+      card: null,
       main:
         `<h1 class="mb-3.5 font-serif text-3xl font-bold">Not found</h1><p class="my-4 font-serif">Nothing exists at this address. <a class="${LINK}" href=".">Back to overview</a></p>`,
     };
@@ -131,6 +134,7 @@ export class Renderer {
   public pkg(i: number): Page {
     const pkg = this.meta.pk[i];
     const list = this.pkgClasses[i];
+    const structs = list.filter((c) => c.struct).length;
     return {
       title: `${pkg || "(none)"} package`,
       description: `${this.game} documentation of package ${
@@ -139,6 +143,10 @@ export class Renderer {
       indexable: true,
       icon: "P",
       crumbs: [[this.name, ""], [pkg || "(none)", pkgUrl(pkg)]],
+      card: this.card("P", "Package", pkg || "(none)", "", "", [
+        [list.length - structs, "classes"],
+        [structs, "structs"],
+      ]),
       main:
         `<div class="wrap-anywhere font-mono text-sm ${MUTED}">Package</div><h1 class="mb-3.5 font-serif text-3xl font-bold">${
           esc(pkg || "(none)")
@@ -249,6 +257,8 @@ export class Renderer {
     }
     const parent = this.classes[c.sup];
     const kind = c.struct ? "struct" : "class";
+    const stats: [number, string][] = [[mm.f.length, "fields"]];
+    if (!c.struct || mm.m.length) stats.push([mm.m.length, "methods"]);
     return {
       title: `${c.name} ${kind} (${pkg})`,
       description: `${this.game} documentation of ${kind} ${c.name}${
@@ -261,8 +271,64 @@ export class Renderer {
         [pkg || "(none)", pkgUrl(pkg)],
         [c.name, classUrl(c.path)],
       ],
+      card: this.card(
+        c.struct ? "S" : "C",
+        c.struct ? "Struct" : "Class",
+        c.name,
+        pkg,
+        parent ? parent.name : "",
+        stats,
+      ),
       main: h + this.inherited(ancestors),
     };
+  }
+
+  private card(
+    icon: Icon,
+    kind: string,
+    name: string,
+    pkg: string,
+    parent: string,
+    stats: [number, string][],
+  ): string {
+    const cut = (s: string, n: number) =>
+      s.length > n ? `${s.slice(0, n - 1)}…` : s;
+    const mono = "ui-monospace, Menlo, Consolas, monospace";
+    const grey = "#5b6678";
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 300"><path fill="#f4f6f9" d="M0 0h600v300H0z"/><g transform="translate(24 24)">` +
+      (pkg
+        ? `<text y="12" fill="#0a4ea3" font-family="${mono}" font-size="14">${
+          esc(cut(pkg, 64))
+        }</text>`
+        : "") +
+      `<rect width="32" height="32" y="30" fill="#e3e9f2" rx="6"/>` +
+      `<text x="16" y="55" fill="${grey}" font-family="${mono}" font-size="24" font-weight="700" text-anchor="middle">${icon}</text>` +
+      `<text x="42" y="55" fill="#000" font-family="Arial, sans-serif" font-size="25" font-weight="700">${kind} <tspan font-family="${mono}">${
+        esc(cut(name, 28))
+      }</tspan></text>` +
+      (parent
+        ? `<text x="42" y="80" fill="${grey}" font-family="Arial, sans-serif" font-size="16">extends <tspan font-family="${mono}">${
+          esc(cut(parent, 46))
+        }</tspan></text>`
+        : "") +
+      `<g font-family="Arial, sans-serif" transform="translate(0 220)">` +
+      stats
+        .map(([n, label], i) =>
+          `<text x="${
+            i * 60
+          }" fill="#000" font-size="20" font-weight="500">${n.toLocaleString()}</text><text x="${
+            i * 60
+          }" y="20" fill="${grey}" font-size="13">${label}</text>`
+        )
+        .join("") +
+      `<text x="552" y="-2" fill="${grey}" font-size="19" font-weight="700" text-anchor="end">${
+        esc(this.name)
+      }</text>` +
+      `<text x="552" y="20" fill="${grey}" font-size="13" text-anchor="end">The Isle: Evrima${
+        this.version
+          ? ` <tspan font-family="${mono}">${esc(this.version)}</tspan>`
+          : ""
+      }</text></g></g><path fill="#4f6d8f" d="M0 284h600v16H0z"/></svg>`;
   }
 
   private get game(): string {

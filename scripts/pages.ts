@@ -1,4 +1,5 @@
 import { dirname, join } from "node:path";
+import { xxhash128 } from "hash-wasm";
 import Mustache from "mustache";
 import { ICONS, type Page, Renderer } from "../src/render.ts";
 import { classUrl, esc, pkgUrl } from "../src/shared.ts";
@@ -67,6 +68,16 @@ function* pages(): Generator<Entry> {
   }
 }
 
+async function assetHash(text: string): Promise<string> {
+  const alphabet =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  const hex = await xxhash128(text);
+  let n = BigInt(`0x${hex.match(/../g)!.reverse().join("")}`);
+  let hash = "";
+  for (; n > 0n; n /= 64n) hash = alphabet[Number(n % 64n)] + hash;
+  return hash.padStart(21, "A").slice(0, 8);
+}
+
 async function write(path: string, text: string) {
   const file = join(OUT, path);
   await Deno.mkdir(dirname(file), { recursive: true });
@@ -115,6 +126,8 @@ let skipped = 0;
 let chars = 0;
 let batch: Promise<void>[] = [];
 for (const { file, url, page } of pages()) {
+  const cardUrl = page.card && url !== null ? `og/${url}.svg` : "";
+  const cardHash = page.card ? await assetHash(page.card) : "";
   const html = Mustache.render(template, {
     ...stamp,
     name: NAME,
@@ -123,9 +136,17 @@ for (const { file, url, page } of pages()) {
     canonical: siteUrl && url !== null ? `${siteUrl}/${url}` : "",
     noindex: !page.indexable,
     icon: `icons/${page.icon.toLowerCase()}.svg`,
+    image: siteUrl && cardUrl
+      ? `https://wsrv.nl/?url=${
+        encodeURIComponent(`${siteUrl}/${cardUrl}?v=${cardHash}`)
+      }&output=webp&ll&w=1200&h=600`
+      : "",
     jsonld: breadcrumbs(page.crumbs),
     main: page.main,
   });
+  if (page.card && cardUrl) {
+    batch.push(write(decodeURIComponent(cardUrl), page.card));
+  }
   if (url !== null) {
     if (page.indexable) urls.push(`${siteUrl}/${url}`);
     else skipped++;
@@ -133,7 +154,7 @@ for (const { file, url, page } of pages()) {
   count++;
   chars += html.length;
   batch.push(write(file, html));
-  if (batch.length === 64) {
+  if (batch.length >= 64) {
     await Promise.all(batch);
     batch = [];
   }
