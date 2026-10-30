@@ -2,43 +2,28 @@
   "license": "GPL-3.0-only",
   "tasks": {
     "data": "deno run --allow-read --allow-write=src/data --allow-env=DUMP --v8-flags=--max-old-space-size=6144 scripts/data.ts",
-    "dev": "deno run -A npm:vite@^8.0.0",
-    "bundle": "deno run -A npm:vite@^8.0.0 build",
+    "dev": "vite",
+    "bundle": "vite build",
     "build": {
       "command": "deno task bundle",
-      "dependencies": [
-        "data"
-      ]
+      "dependencies": ["data"]
     },
-    "preview": "deno run -A npm:vite@^8.0.0 preview"
+    "preview": "vite preview"
   },
   "nodeModulesDir": "auto",
   "imports": {
-    "tailwindcss": "npm:tailwindcss@^4.1.0",
-    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.0",
-    "vite": "npm:vite@^8.0.0"
+    "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.3.3",
+    "tailwindcss": "npm:tailwindcss@^4.3.3",
+    "vite": "npm:vite@^8.3.5"
   },
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "deno.ns"
-    ],
-    "types": [
-      "vite/client",
-      "./src/env.d.ts"
-    ]
+    "lib": ["dom", "dom.iterable", "deno.ns"],
+    "types": ["vite/client", "./src/env.d.ts"]
   },
   "fmt": {
-    "exclude": [
-      "dist/",
-      "src/data/"
-    ]
+    "exclude": ["dist/", "src/data/"]
   },
   "lint": {
-    "exclude": [
-      "dist/",
-      "src/data/"
-    ]
+    "exclude": ["dist/", "src/data/"]
   }
 }

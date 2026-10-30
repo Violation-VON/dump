@@ -1,9 +1,9 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@tailwindcss/vite@^4.1.0": "4.3.3_vite@8.3.5",
-    "npm:tailwindcss@^4.1.0": "4.3.3",
-    "npm:vite@8": "8.3.5"
+    "npm:@tailwindcss/vite@^4.3.3": "4.3.3_vite@8.3.5",
+    "npm:tailwindcss@^4.3.3": "4.3.3",
+    "npm:vite@^8.3.5": "8.3.5"
   },
   "npm": {
     "@jridgewell/gen-mapping@0.3.13": {
@@ -472,9 +472,9 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@tailwindcss/vite@^4.1.0",
-      "npm:tailwindcss@^4.1.0",
-      "npm:vite@8"
+      "npm:@tailwindcss/vite@^4.3.3",
+      "npm:tailwindcss@^4.3.3",
+      "npm:vite@^8.3.5"
     ]
   }
 }
