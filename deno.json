@@ -2,23 +2,24 @@
   "license": "GPL-3.0-only",
   "tasks": {
     "data": "deno run --allow-read --allow-write=src/data --allow-env=DUMP --v8-flags=--max-old-space-size=6144 scripts/data.ts",
-    "dev": "vite",
     "bundle": "vite build",
+    "pages": "deno run --allow-read=src/data,dist,VERSION --allow-write=dist --allow-env=GITHUB_SHA,GITHUB_REPOSITORY --v8-flags=--max-old-space-size=6144 scripts/pages.ts",
     "build": {
-      "command": "deno task bundle",
+      "command": "deno task bundle && deno task pages",
       "dependencies": ["data"]
     },
     "preview": "vite preview"
   },
   "nodeModulesDir": "auto",
   "imports": {
+    "mustache": "npm:mustache@^4.2.0",
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.3.3",
     "tailwindcss": "npm:tailwindcss@^4.3.3",
     "vite": "npm:vite@^8.3.5"
   },
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "deno.ns"],
-    "types": ["vite/client", "./src/env.d.ts"]
+    "types": ["vite/client"]
   },
   "fmt": {
     "exclude": ["dist/", "src/data/"]

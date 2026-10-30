@@ -91,7 +91,13 @@ async function writeShards(model: Model) {
 }
 
 function writeSearch(model: Model) {
-  const index: SearchIndex = { n: [], c: [], k: "" };
+  const index: SearchIndex = {
+    t: model.classes.map((c) => c.path),
+    s: model.classes.map((c) => c.struct ? "S" : "C").join(""),
+    n: [],
+    c: [],
+    k: "",
+  };
   for (const [i, entry] of model.entries) {
     for (const f of entry.f) {
       index.n.push(f[0]);

@@ -36,14 +36,16 @@ jobs:
         uses: actions/cache@v6
         with:
           path: src/data
-          key: data-${{ hashFiles('UE4SS_ObjectDump.txt*', 'scripts/**', 'src/types.ts') }}
+          key: data-${{ hashFiles('UE4SS_ObjectDump.txt*', 'scripts/data.ts', 'scripts/parse.ts', 'src/types.ts') }}
       - if: steps.data.outputs.cache-hit != 'true'
         run: |
           git lfs pull
           deno task data
       - id: pages
         uses: actions/configure-pages@v6
-      - run: deno task bundle
+      - run: |
+          deno task bundle
+          deno task pages
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
       - uses: actions/upload-pages-artifact@v5

@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Evrima Object Dump</title>
+    <title>{{ title }}</title>
     <link rel="stylesheet" href="./style.css">
     <script type="module" src="./app.ts"></script>
   </head>
@@ -16,7 +16,8 @@
       <a
         class="text-lg font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300"
         href=".">Evrima Object Dump</a>
-      <span id="stamp" class="ml-auto opacity-85 max-md:ml-0"></span>
+      <span id="stamp"
+        class="ml-auto opacity-85 max-md:ml-0">{{#version}}Server {{.}}{{/version}}{{#commit}}{{#version}} · {{/version}}<a class="hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="https://github.com/{{ repo }}/commit/{{ sha }}">{{ short }}</a>{{/commit}}</span>
     </header>
     <div class="flex min-h-0 flex-1 max-md:flex-col">
       <aside
@@ -35,8 +36,7 @@
       </aside>
       <main id="main"
         class="focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 min-w-0 flex-1 overflow-auto px-7 pt-5 pb-15 max-md:p-4">
-        <p
-          class="my-4 font-serif text-steel-700 dark:text-steel-600">Loading…</p>
+        {{{main}}}
       </main>
     </div>
   </body>

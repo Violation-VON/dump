@@ -37,6 +37,8 @@ export interface Meta {
 }
 
 export interface SearchIndex {
+  t: string[];
+  s: string;
   n: string[];
   c: number[];
   k: string;
