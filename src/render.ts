@@ -12,6 +12,8 @@ export interface Cls {
 
 export interface Page {
   title: string;
+  description: string;
+  crumbs: [name: string, url: string][];
   main: string;
 }
 
@@ -44,6 +46,7 @@ export class Renderer {
     private readonly meta: Meta,
     private readonly members: Map<number, Members>,
     private readonly name: string,
+    private readonly version: string,
   ) {
     this.packages = meta.pk;
     this.classes = meta.c.map(([n, pk, sup, st], i) => ({
@@ -72,6 +75,9 @@ export class Renderer {
     const structs = this.classes.filter((c) => c.struct).length;
     return {
       title: "",
+      description:
+        `${this.game} documentation of UE4SS classes, structs, fields, and methods.`,
+      crumbs: [],
       main:
         `<h1 class="mb-3.5 font-serif text-3xl font-bold">${
           esc(this.name)
@@ -100,6 +106,8 @@ export class Renderer {
   public notFound(): Page {
     return {
       title: "Not found",
+      description: "",
+      crumbs: [],
       main:
         `<h1 class="mb-3.5 font-serif text-3xl font-bold">Not found</h1><p class="my-4 font-serif">Nothing exists at this address. <a class="${LINK}" href=".">Back to overview</a></p>`,
     };
@@ -109,7 +117,11 @@ export class Renderer {
     const pkg = this.meta.pk[i];
     const list = this.pkgClasses[i];
     return {
-      title: pkg,
+      title: `${pkg || "(none)"} package`,
+      description: `${this.game} documentation of package ${
+        pkg || "(none)"
+      }: its classes and structs.`,
+      crumbs: [[this.name, ""], [pkg || "(none)", pkgUrl(pkg)]],
       main:
         `<div class="wrap-anywhere font-mono text-sm ${MUTED}">Package</div><h1 class="mb-3.5 font-serif text-3xl font-bold">${
           esc(pkg || "(none)")
@@ -218,7 +230,26 @@ export class Renderer {
       h +=
         `<p class="my-4 font-serif ${MUTED}">Nothing declared on this type.</p>`;
     }
-    return { title: c.name, main: h + this.inherited(ancestors) };
+    const parent = this.classes[c.sup];
+    const kind = c.struct ? "struct" : "class";
+    return {
+      title: `${c.name} ${kind} (${pkg})`,
+      description: `${this.game} documentation of ${kind} ${c.name}${
+        pkg ? ` in package ${pkg}` : ""
+      }${parent ? `, which extends ${parent.name}` : ""}.`,
+      crumbs: [
+        [this.name, ""],
+        [pkg || "(none)", pkgUrl(pkg)],
+        [c.name, classUrl(c.path)],
+      ],
+      main: h + this.inherited(ancestors),
+    };
+  }
+
+  private get game(): string {
+    return this.version
+      ? `The Isle: Evrima server ${this.version}`
+      : "The Isle: Evrima";
   }
 
   private membersOf(c: Cls): Members {

@@ -1,11 +1,14 @@
 import { dirname, join } from "node:path";
 import Mustache from "mustache";
 import { type Page, Renderer } from "../src/render.ts";
-import { classUrl, pkgUrl } from "../src/shared.ts";
+import { classUrl, esc, pkgUrl } from "../src/shared.ts";
 import type { Members, Meta } from "../src/types.ts";
 
 const DATA = "src/data";
 const OUT = "dist";
+const SITEMAP_LIMIT = 50_000;
+const XML = '<?xml version="1.0" encoding="UTF-8"?>';
+const NS = "http://www.sitemaps.org/schemas/sitemap/0.9";
 const NAME = "Evrima Object Dump";
 
 const template = await Deno.readTextFile(`${OUT}/index.html`);
@@ -15,6 +18,7 @@ if (!template.includes("{{{main}}}")) {
   );
 }
 
+const siteUrl = (Deno.env.get("SITE_URL") ?? "").replace(/\/+$/, "");
 const sha = Deno.env.get("GITHUB_SHA") ?? "";
 const repo = Deno.env.get("GITHUB_REPOSITORY") ?? "";
 const stamp = {
@@ -36,16 +40,24 @@ for (let n = 0; n < meta.shards; n++) {
   for (const [i, m] of Object.entries(shard)) members.set(Number(i), m);
 }
 
-const site = new Renderer(meta, members, NAME);
+const site = new Renderer(meta, members, NAME, stamp.version);
 
-function* pages(): Generator<[string, Page]> {
-  yield ["index.html", site.home()];
-  yield ["404.html", site.notFound()];
+interface Entry {
+  file: string;
+  url: string | null;
+  page: Page;
+}
+
+function* pages(): Generator<Entry> {
+  yield { file: "index.html", url: "", page: site.home() };
+  yield { file: "404.html", url: null, page: site.notFound() };
   for (let i = 0; i < site.packages.length; i++) {
-    yield [`${decodeURIComponent(pkgUrl(site.packages[i]))}.html`, site.pkg(i)];
+    const url = pkgUrl(site.packages[i]);
+    yield { file: `${decodeURIComponent(url)}.html`, url, page: site.pkg(i) };
   }
   for (const c of site.classes) {
-    yield [`${decodeURIComponent(classUrl(c.path))}.html`, site.cls(c)];
+    const url = classUrl(c.path);
+    yield { file: `${decodeURIComponent(url)}.html`, url, page: site.cls(c) };
   }
 }
 
@@ -55,24 +67,71 @@ async function write(path: string, text: string) {
   await Deno.writeTextFile(file, text);
 }
 
+function breadcrumbs(crumbs: Page["crumbs"]): string {
+  if (!siteUrl || !crumbs.length) return "";
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map(([name, url], i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name,
+      item: `${siteUrl}/${url}`,
+    })),
+  }).replaceAll("<", "\\u003c");
+}
+
+async function writeSitemaps(urls: string[]) {
+  const names: string[] = [];
+  for (let i = 0; i < urls.length; i += SITEMAP_LIMIT) {
+    const name = `sitemap-${names.length + 1}.xml`;
+    names.push(name);
+    const entries = urls.slice(i, i + SITEMAP_LIMIT)
+      .map((u) => `<url><loc>${esc(u)}</loc></url>`)
+      .join("");
+    await write(name, `${XML}<urlset xmlns="${NS}">${entries}</urlset>`);
+  }
+  const entries = names
+    .map((n) => `<sitemap><loc>${esc(`${siteUrl}/${n}`)}</loc></sitemap>`)
+    .join("");
+  await write(
+    "sitemap.xml",
+    `${XML}<sitemapindex xmlns="${NS}">${entries}</sitemapindex>`,
+  );
+}
+
+const urls: string[] = [];
 let count = 0;
 let chars = 0;
 let batch: Promise<void>[] = [];
-for (const [path, page] of pages()) {
+for (const { file, url, page } of pages()) {
   const html = Mustache.render(template, {
     ...stamp,
+    name: NAME,
     title: page.title ? `${page.title} · ${NAME}` : NAME,
+    description: page.description,
+    canonical: siteUrl && url !== null ? `${siteUrl}/${url}` : "",
+    noindex: url === null,
+    jsonld: breadcrumbs(page.crumbs),
     main: page.main,
   });
+  if (url !== null) urls.push(`${siteUrl}/${url}`);
   count++;
   chars += html.length;
-  batch.push(write(path, html));
+  batch.push(write(file, html));
   if (batch.length === 64) {
     await Promise.all(batch);
     batch = [];
   }
 }
 await Promise.all(batch);
+if (siteUrl) {
+  await writeSitemaps(urls);
+  await write(
+    "robots.txt",
+    `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`,
+  );
+}
 
 console.log(
   `${count.toLocaleString()} pages, ${(chars / 1e6).toFixed(1)} MB of HTML`,

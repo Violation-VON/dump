@@ -6,6 +6,15 @@
     <meta name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{ title }}</title>
+    {{#description}}<meta name="description" content="{{ description }}">{{/description}}
+    <meta property="og:site_name" content="{{ name }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ title }}">
+    {{#description}}<meta property="og:description" content="{{ description }}">{{/description}}
+    {{#canonical}}<meta property="og:url" content="{{ canonical }}">{{/canonical}}
+    {{#canonical}}<link rel="canonical" href="{{ canonical }}">{{/canonical}}
+    {{#noindex}}<meta name="robots" content="noindex">{{/noindex}}
+    {{#jsonld}}<script type="application/ld+json">{{{ jsonld }}}</script>{{/jsonld}}
     <link rel="stylesheet" href="./style.css">
     <script type="module" src="./app.ts"></script>
   </head>

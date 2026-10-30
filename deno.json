@@ -3,7 +3,7 @@
   "tasks": {
     "data": "deno run --allow-read --allow-write=src/data --allow-env=DUMP --v8-flags=--max-old-space-size=6144 scripts/data.ts",
     "bundle": "vite build",
-    "pages": "deno run --allow-read=src/data,dist,VERSION --allow-write=dist --allow-env=GITHUB_SHA,GITHUB_REPOSITORY --v8-flags=--max-old-space-size=6144 scripts/pages.ts",
+    "pages": "deno run --allow-read=src/data,dist,VERSION --allow-write=dist --allow-env=GITHUB_SHA,GITHUB_REPOSITORY,SITE_URL --v8-flags=--max-old-space-size=6144 scripts/pages.ts",
     "build": {
       "command": "deno task bundle && deno task pages",
       "dependencies": ["data"]

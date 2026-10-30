@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "GITHUB_SHA=$VERCEL_GIT_COMMIT_SHA GITHUB_REPOSITORY=$VERCEL_GIT_REPO_OWNER/$VERCEL_GIT_REPO_SLUG npx -y deno task build",
+  "buildCommand": "SITE_URL=https://$VERCEL_PROJECT_PRODUCTION_URL GITHUB_SHA=$VERCEL_GIT_COMMIT_SHA GITHUB_REPOSITORY=$VERCEL_GIT_REPO_OWNER/$VERCEL_GIT_REPO_SLUG npx -y deno task build",
   "outputDirectory": "dist",
   "cleanUrls": true,
   "headers": [
