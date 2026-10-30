@@ -18,6 +18,8 @@ export interface Page {
 const FOCUS =
   "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300";
 const LINK = `text-azure-700 hover:underline dark:text-azure-300 ${FOCUS}`;
+const LINKS =
+  "[&_a]:text-azure-700 [&_a]:hover:underline dark:[&_a]:text-azure-300 [&_a]:focus-visible:outline-2 [&_a]:focus-visible:outline-offset-1 [&_a]:focus-visible:outline-azure-700 dark:[&_a]:focus-visible:outline-azure-300";
 const MUTED = "text-steel-700 dark:text-steel-600";
 const HEADING =
   "mt-6.5 rounded-t-sm bg-ink-300 px-2.5 py-1.5 text-sm font-bold text-white dark:bg-ink-400 dark:text-steel-200";
@@ -264,9 +266,7 @@ export class Renderer {
       const names = (list: { 0: string }[], suffix: string) =>
         list
           .map((x) =>
-            `<a class="${LINK}" href="${
-              esc(classUrl(a.path, x[0] + suffix))
-            }">${esc(x[0])}</a>`
+            `<a href="${esc(classUrl(a.path, x[0] + suffix))}">${esc(x[0])}</a>`
           )
           .join(", ");
       h +=
@@ -286,7 +286,7 @@ export class Renderer {
         "</details>";
     }
     return h
-      ? `<h2 class="${HEADING}">Inherited members</h2><div class="${BOX} px-2.5 py-1.5">${h}</div>`
+      ? `<h2 class="${HEADING}">Inherited members</h2><div class="${BOX} px-2.5 py-1.5 ${LINKS}">${h}</div>`
       : "";
   }
 }
