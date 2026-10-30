@@ -1,0 +1,67 @@
+{
+  "lsp": {
+    "deno": {
+      "settings": {
+        "deno": {
+          "enable": true
+        }
+      },
+      "tailwindcss-language-server": {
+        "settings": {
+          "classFunctions": ["cva", "cx"],
+          "experimental": {
+            "classRegex": ["[cls|className]\\s\\:\\=\\s\"([^\"]*)"]
+          }
+        }
+      }
+    },
+    "json-language-server": {
+      "settings": {
+        "json": {
+          "schemas": [
+            {
+              "fileMatch": ["deno.json", "deno.jsonc"],
+              "url": "https://raw.githubusercontent.com/denoland/deno/refs/heads/main/cli/schemas/config-file.v1.json"
+            },
+            {
+              "fileMatch": ["package.json"],
+              "url": "https://www.schemastore.org/package"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "languages": {
+    "JavaScript": {
+      "language_servers": [
+        "deno",
+        "!typescript-language-server",
+        "!vtsls",
+        "!eslint"
+      ],
+      "formatter": "language_server",
+      "format_on_save": "on"
+    },
+    "TypeScript": {
+      "language_servers": [
+        "deno",
+        "!typescript-language-server",
+        "!vtsls",
+        "!eslint"
+      ],
+      "formatter": "language_server",
+      "format_on_save": "on"
+    },
+    "HTML": {
+      "language_servers": ["deno"],
+      "formatter": "language_server",
+      "format_on_save": "on"
+    },
+    "CSS": {
+      "language_servers": ["deno", "tailwindcss-intellisense-css"],
+      "formatter": "language_server",
+      "format_on_save": "on"
+    }
+  }
+}
