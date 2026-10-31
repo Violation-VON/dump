@@ -195,6 +195,61 @@ $<HTMLInputElement>("#nat").checked =
   readPref(() => localStorage, "native") !== "0";
 renderList();
 
+const navigationProgress = $("#navigation-progress") as HTMLDivElement;
+let progressShowTimer: ReturnType<typeof setTimeout> | undefined;
+let progressStepTimer: ReturnType<typeof setInterval> | undefined;
+let progressFinishTimer: ReturnType<typeof setTimeout> | undefined;
+let progressValue = 0;
+let progressVisible = false;
+
+function showProgress() {
+  if (progressVisible) return;
+  progressVisible = true;
+  progressValue = 0.08;
+  navigationProgress.hidden = false;
+  navigationProgress.classList.remove("opacity-0");
+  navigationProgress.style.scale = `${progressValue} 1`;
+
+  progressStepTimer = setInterval(() => {
+    progressValue += (0.9 - progressValue) * 0.16;
+    navigationProgress.style.scale = `${progressValue} 1`;
+  }, 180);
+}
+
+function startProgress() {
+  clearTimeout(progressFinishTimer);
+  clearTimeout(progressShowTimer);
+
+  if (progressVisible) {
+    if (progressValue >= 1) {
+      progressValue = 0.9;
+      navigationProgress.style.scale = `${progressValue} 1`;
+    }
+    return;
+  }
+
+  progressShowTimer = setTimeout(showProgress, 120);
+}
+
+function finishProgress() {
+  clearTimeout(progressShowTimer);
+  clearInterval(progressStepTimer);
+
+  if (!progressVisible) return;
+
+  progressValue = 1;
+  navigationProgress.style.scale = "1 1";
+  navigationProgress.classList.add("opacity-0");
+
+  progressFinishTimer = setTimeout(() => {
+    navigationProgress.hidden = true;
+    navigationProgress.classList.remove("opacity-0");
+    navigationProgress.style.scale = "0 1";
+    progressValue = 0;
+    progressVisible = false;
+  }, 320);
+}
+
 let navigation: AbortController | undefined;
 
 async function navigate(url: URL, push: boolean, scrollTop?: number) {
@@ -202,6 +257,7 @@ async function navigate(url: URL, push: boolean, scrollTop?: number) {
 
   const controller = new AbortController();
   navigation = controller;
+  startProgress();
   const main = $("#main");
 
   if (push) {
@@ -280,7 +336,10 @@ async function navigate(url: URL, push: boolean, scrollTop?: number) {
     if (push) location.assign(url.href);
     else location.reload();
   } finally {
-    if (navigation === controller) navigation = undefined;
+    if (navigation === controller) {
+      navigation = undefined;
+      finishProgress();
+    }
   }
 }
 
