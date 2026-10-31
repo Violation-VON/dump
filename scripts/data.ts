@@ -17,13 +17,9 @@ async function exists(path: string): Promise<boolean> {
 }
 
 async function findDump(): Promise<string> {
-  const candidates = [
-    Deno.env.get("DUMP"),
-    "UE4SS_ObjectDump.txt",
-    "UE4SS_ObjectDump.txt.gz",
-  ];
+  const candidates = ["UE4SS_ObjectDump.txt", "UE4SS_ObjectDump.txt.gz"];
   for (const path of candidates) {
-    if (path && await exists(path)) return path;
+    if (await exists(path)) return path;
   }
   throw new Error("No dump found.");
 }

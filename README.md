@@ -16,8 +16,8 @@ Requires [Deno](https://deno.com).
     deno task build
     deno task preview
 
-The build parses the dump (`DUMP` overrides its path), bundles the app with
-Vite, and renders every page to static HTML in `dist/`.
+The build parses the dump, bundles the app with Vite, and renders every page to
+static HTML in `dist/`.
 
 ## Deployment
 
