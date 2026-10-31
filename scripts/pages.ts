@@ -29,9 +29,7 @@ if (indexNowKey && !/^[A-Za-z0-9-]{8,128}$/.test(indexNowKey)) {
 const sha = Deno.env.get("GITHUB_SHA") ?? "";
 const repo = Deno.env.get("GITHUB_REPOSITORY") ?? "";
 const stamp = {
-  version: await Deno.readTextFile("VERSION").then((v) => v.trim()).catch(() =>
-    ""
-  ),
+  version: (await Deno.readTextFile("VERSION")).trim(),
   commit: !!(repo && sha),
   repo,
   sha,

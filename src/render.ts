@@ -324,17 +324,13 @@ export class Renderer {
       `<text x="552" y="-2" fill="${grey}" font-size="19" font-weight="700" text-anchor="end">${
         esc(this.name)
       }</text>` +
-      `<text x="552" y="20" fill="${grey}" font-size="13" text-anchor="end">The Isle: Evrima${
-        this.version
-          ? ` <tspan font-family="${mono}">${esc(this.version)}</tspan>`
-          : ""
-      }</text></g></g><path fill="#4f6d8f" d="M0 284h600v16H0z"/></svg>`;
+      `<text x="552" y="20" fill="${grey}" font-size="13" text-anchor="end">The Isle: Evrima <tspan font-family="${mono}">${
+        esc(this.version)
+      }</tspan></text></g></g><path fill="#4f6d8f" d="M0 284h600v16H0z"/></svg>`;
   }
 
   private get game(): string {
-    return this.version
-      ? `The Isle: Evrima server ${this.version}`
-      : "The Isle: Evrima";
+    return `The Isle: Evrima server ${this.version}`;
   }
 
   private membersOf(c: Cls): Members {

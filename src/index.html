@@ -36,7 +36,7 @@
         class="text-lg font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300"
         href=".">Evrima Object Dump</a>
       <span id="stamp"
-        class="ml-auto opacity-85 max-md:ml-0">{{#version}}Server {{.}}{{/version}}{{#commit}}{{#version}} · {{/version}}<a class="hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="https://github.com/{{ repo }}/commit/{{ sha }}">{{ short }}</a>{{/commit}}</span>
+        class="ml-auto opacity-85 max-md:ml-0">Server {{ version }}{{#commit}} · <a class="hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="https://github.com/{{ repo }}/commit/{{ sha }}">{{ short }}</a>{{/commit}}</span>
     </header>
     <div class="flex min-h-0 flex-1 max-md:flex-col">
       <aside
