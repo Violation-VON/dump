@@ -83,15 +83,21 @@ export class Renderer {
     return {
       title: "",
       description:
-        `${this.game} documentation of UE4SS classes, structs, fields, and methods.`,
+        `Browsable reference for the classes, structs, fields and methods that Unreal Engine exposes in The Isle: Evrima’s dedicated server, generated from a UE4SS object dump.`,
       indexable: true,
       icon: "E",
       crumbs: [],
       card: null,
       main:
-        `<h1 class="mb-3.5 font-serif text-3xl font-bold">${
+        `<div class="max-w-prose text-pretty"><h1 class="mb-3.5 font-serif text-3xl font-bold">${
           esc(this.name)
         }</h1>` +
+        `<p class="my-4 font-serif">Browsable reference for the classes, structs, fields and methods that Unreal Engine exposes in The Isle: Evrima’s dedicated server version ${
+          esc(this.version)
+        }, generated from a UE4SS object dump.</p>` +
+        `<p class="my-4 font-serif">Classes and structs are organised into packages. The package for The Isle: Evrima itself is <a class="whitespace-nowrap ${LINK}" href="${
+          esc(pkgUrl("/Script/TheIsle"))
+        }">/Script/TheIsle</a>, and all packages are listed below.</p></div>` +
         `<div class="mt-3 mb-2 flex flex-wrap gap-x-7 gap-y-2 text-sm"><span><b class="block text-xl">${
           (this.classes.length - structs).toLocaleString()
         }</b>classes</span>` +
