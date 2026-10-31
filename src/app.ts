@@ -139,7 +139,7 @@ function syncQuery() {
   const q = $<HTMLInputElement>("#q").value.trim();
   if (q) u.searchParams.set("q", q);
   else u.searchParams.delete("q");
-  history.replaceState(null, "", u);
+  history.replaceState(history.state, "", u);
   writePref(() => sessionStorage, "q", q);
 }
 
@@ -194,3 +194,129 @@ $<HTMLInputElement>("#q").value =
 $<HTMLInputElement>("#nat").checked =
   readPref(() => localStorage, "native") !== "0";
 renderList();
+
+let navigation: AbortController | undefined;
+
+async function navigate(url: URL, push: boolean, scrollTop?: number) {
+  navigation?.abort();
+
+  const controller = new AbortController();
+  navigation = controller;
+  const main = $("#main");
+
+  if (push) {
+    history.replaceState(
+      { ...history.state, scrollTop: main.scrollTop },
+      "",
+      location.href,
+    );
+  }
+
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: { Accept: "text/html" },
+    });
+
+    if (
+      !response.ok ||
+      !response.headers.get("content-type")?.includes("text/html")
+    ) {
+      throw new Error(`Unexpected response: ${response.status}`);
+    }
+
+    const doc = new DOMParser().parseFromString(
+      await response.text(),
+      "text/html",
+    );
+    const nextMain = doc.querySelector("#main");
+
+    if (!nextMain || !doc.title) throw new Error("Invalid page response");
+    if (controller.signal.aborted) return;
+
+    main.replaceChildren(...nextMain.childNodes);
+    document.title = doc.title;
+
+    const metadata = [
+      'meta[name="description"]',
+      'meta[name="robots"]',
+      'meta[property^="og:"]',
+      'link[rel="canonical"]',
+      'script[type="application/ld+json"]',
+      'link[rel="icon"]',
+    ].join(",");
+
+    document.head.querySelectorAll(metadata).forEach((node) => node.remove());
+    document.head.append(
+      ...Array.from(
+        doc.head.querySelectorAll(metadata),
+        (node) => document.importNode(node, true),
+      ),
+    );
+
+    if (push) history.pushState({ scrollTop: 0 }, "", url.href);
+
+    renderList();
+
+    requestAnimationFrame(() => {
+      if (controller.signal.aborted) return;
+
+      if (typeof scrollTop === "number") {
+        main.scrollTop = scrollTop;
+      } else if (url.hash) {
+        const target = document.getElementById(
+          decodeURIComponent(url.hash.slice(1)),
+        );
+        if (target) target.scrollIntoView();
+        else main.scrollTop = 0;
+      } else {
+        main.scrollTop = 0;
+      }
+
+      if (!url.hash) main.focus({ preventScroll: true });
+    });
+  } catch {
+    if (controller.signal.aborted) return;
+    if (push) location.assign(url.href);
+    else location.reload();
+  } finally {
+    if (navigation === controller) navigation = undefined;
+  }
+}
+
+document.addEventListener("click", (event) => {
+  if (
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  ) return;
+
+  if (!(event.target instanceof Element)) return;
+
+  const link = event.target.closest<HTMLAnchorElement>("a[href]");
+
+  if (
+    !link ||
+    (link.target && link.target !== "_self") ||
+    link.hasAttribute("download") ||
+    link.relList.contains("external")
+  ) return;
+
+  const url = new URL(link.href);
+
+  if (
+    url.origin !== location.origin ||
+    !url.pathname.startsWith(base) ||
+    (url.pathname === location.pathname && url.search === location.search)
+  ) return;
+
+  event.preventDefault();
+  void navigate(url, true);
+});
+
+self.addEventListener("popstate", (event) => {
+  void navigate(new URL(location.href), false, event.state?.scrollTop);
+});
