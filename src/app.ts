@@ -249,6 +249,22 @@ function finishProgress() {
   }, 320);
 }
 
+let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+
+function saveScroll() {
+  clearTimeout(scrollTimer);
+  history.replaceState(
+    { ...history.state, scrollTop: main.scrollTop },
+    "",
+    location.href,
+  );
+}
+
+main.addEventListener("scroll", () => {
+  clearTimeout(scrollTimer);
+  scrollTimer = setTimeout(saveScroll, 150);
+}, { passive: true });
+
 let navigation: AbortController | undefined;
 
 async function navigate(url: URL, push: boolean, scrollTop?: number) {
@@ -258,13 +274,8 @@ async function navigate(url: URL, push: boolean, scrollTop?: number) {
   navigation = controller;
   startProgress();
 
-  if (push) {
-    history.replaceState(
-      { ...history.state, scrollTop: main.scrollTop },
-      "",
-      location.href,
-    );
-  }
+  if (push) saveScroll();
+  else clearTimeout(scrollTimer);
 
   try {
     const response = await fetch(url, {
