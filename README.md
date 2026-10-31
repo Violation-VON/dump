@@ -1,8 +1,8 @@
 # Evrima Object Dump
 
-Searchable documentation of the classes, structs, fields, and methods in a
-UE4SS object dump of The Isle: Evrima server. The site is static and generated
-from `UE4SS_ObjectDump.txt`.
+Searchable documentation of the classes, structs, fields, and methods in a UE4SS
+object dump of The Isle: Evrima server. The site is static and generated from
+`UE4SS_ObjectDump.txt`.
 
 ## Updating
 
