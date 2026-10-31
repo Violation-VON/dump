@@ -36,17 +36,33 @@
         class="text-lg font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300"
         href=".">Evrima Object Dump</a>
       <span id="stamp"
-        class="ml-auto opacity-85 max-md:ml-0">Server {{ version }}{{#commit}} · <a class="hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="https://github.com/{{ repo }}/commit/{{ sha }}">{{ short }}</a>{{/commit}}</span>
+        class="ml-auto opacity-85 max-md:ml-0"><span class="max-md:hidden">Server </span>{{ version }}{{#commit}} · <a class="hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="https://github.com/{{ repo }}/commit/{{ sha }}">{{ short }}</a>{{/commit}}</span>
+      <button type="button" id="menu" aria-label="Search" aria-controls="side"
+        aria-expanded="false"
+        class="group -my-1.5 -mr-2 ml-auto flex size-10 items-center justify-center rounded-sm hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 md:hidden dark:focus-visible:outline-azure-300">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke-width="1.5" stroke="currentColor"
+          class="size-6 group-aria-expanded:hidden">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+          stroke-width="1.5" stroke="currentColor"
+          class="hidden size-6 group-aria-expanded:block">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
     </header>
-    <div class="flex min-h-0 flex-1 max-md:flex-col">
-      <aside
-        class="flex w-80 shrink-0 flex-col border-r border-steel-500 bg-steel-100 max-md:h-2/5 max-md:w-auto max-md:border-r-0 max-md:border-b dark:border-ink-500 dark:bg-ink-800">
+    <div class="relative flex min-h-0 flex-1">
+      <aside id="side"
+        class="flex w-80 shrink-0 flex-col border-r border-steel-500 bg-steel-100 max-md:absolute max-md:inset-0 max-md:z-10 max-md:w-auto max-md:border-r-0 max-md:not-data-open:hidden dark:border-ink-500 dark:bg-ink-800">
         <div
           class="border-b border-steel-500 p-2.5 text-sm dark:border-ink-500">
           <input type="search" id="q"
             placeholder="Search types and members ( / )" autocomplete="off"
             aria-label="Search"
-            class="focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 w-full rounded-sm border border-steel-500 bg-white px-2.25 py-1.75 dark:border-ink-500 dark:bg-ink-950">
+            class="focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 w-full rounded-sm border border-steel-500 bg-white px-2.25 py-1.75 max-md:text-base dark:border-ink-500 dark:bg-ink-950">
           <label class="mt-1.5 block text-steel-700 dark:text-steel-600"><input
               type="checkbox" id="nat" checked class="my-0.75 mr-0.75 ml-1 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300"> Native only (/Script)</label>
         </div>

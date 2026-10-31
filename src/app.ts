@@ -19,9 +19,9 @@ const $ = <T extends HTMLElement = HTMLElement>(selector: string): T =>
   document.querySelector<T>(selector)!;
 
 const ITEM =
-  "group block truncate focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 px-3 py-px hover:bg-steel-300 aria-[current]:bg-steel-300 aria-[current]:font-bold dark:hover:bg-ink-600 dark:aria-[current]:bg-ink-600";
+  "group block truncate focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 px-3 py-px max-md:py-1.5 max-md:text-base hover:bg-steel-300 aria-[current]:bg-steel-300 aria-[current]:font-bold dark:hover:bg-ink-600 dark:aria-[current]:bg-ink-600";
 const BADGE =
-  "mr-1.5 inline-block w-4 rounded-xs bg-steel-300 text-center text-xs group-aria-[current]:bg-white dark:bg-ink-600 dark:group-aria-[current]:bg-ink-950 text-steel-700 dark:text-steel-600";
+  "mr-1.5 inline-block w-4 rounded-xs bg-steel-300 text-center text-xs max-md:w-5 max-md:text-sm group-aria-[current]:bg-white dark:bg-ink-600 dark:group-aria-[current]:bg-ink-950 text-steel-700 dark:text-steel-600";
 const HEADING =
   "mx-3 mt-2.5 mb-1 text-xs font-bold text-steel-700 dark:text-steel-600";
 
@@ -143,14 +143,32 @@ function syncQuery() {
   writePref(() => sessionStorage, "q", q);
 }
 
+function setMenu(open: boolean) {
+  const inside = $("#side").contains(document.activeElement);
+  $("#menu").setAttribute("aria-expanded", String(open));
+  $("#menu").setAttribute("aria-label", open ? "Close search" : "Search");
+  $("#side").toggleAttribute("data-open", open);
+  if (open) $("#q").focus();
+  else if (inside) $("#menu").focus();
+}
+
 document.addEventListener("keydown", (e) => {
   const tag = document.activeElement?.tagName ?? "";
   if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
     e.preventDefault();
     $("#q").focus();
-  } else if (e.key === "Escape" && document.activeElement === $("#q")) {
-    $("#q").blur();
+  } else if (e.key === "Escape") {
+    if ($("#side").hasAttribute("data-open")) setMenu(false);
+    else if (document.activeElement === $("#q")) $("#q").blur();
   }
+});
+
+$("#menu").addEventListener("click", () => {
+  setMenu($("#menu").getAttribute("aria-expanded") !== "true");
+});
+
+$("#side").addEventListener("click", (e) => {
+  if ((e.target as Element).closest("a")) setMenu(false);
 });
 
 $("#q").addEventListener("input", () => {
