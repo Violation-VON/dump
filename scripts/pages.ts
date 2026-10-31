@@ -1,9 +1,10 @@
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { xxhash128 } from "hash-wasm";
 import Mustache from "mustache";
 import { type Page, Renderer } from "../src/render.ts";
 import { classUrl, esc, pkgUrl } from "../src/shared.ts";
 import type { Members, Meta } from "../src/types.ts";
+import { write as writeFile } from "./write.ts";
 
 const DATA = "src/data";
 const OUT = "dist";
@@ -37,13 +38,9 @@ const stamp = {
 };
 
 const meta: Meta = JSON.parse(await Deno.readTextFile(`${DATA}/meta.json`));
-const members = new Map<number, Members>();
-for (let n = 0; n < meta.shards; n++) {
-  const shard: Record<number, Members> = JSON.parse(
-    await Deno.readTextFile(`${DATA}/m/${n}.json`),
-  );
-  for (const [i, m] of Object.entries(shard)) members.set(Number(i), m);
-}
+const members: Record<number, Members> = JSON.parse(
+  await Deno.readTextFile(`${DATA}/members.json`),
+);
 
 const site = new Renderer(meta, members, NAME, stamp.version);
 
@@ -76,11 +73,7 @@ async function assetHash(text: string): Promise<string> {
   return hash.padStart(21, "A").slice(0, 8);
 }
 
-async function write(path: string, text: string) {
-  const file = join(OUT, path);
-  await Deno.mkdir(dirname(file), { recursive: true });
-  await Deno.writeTextFile(file, text);
-}
+const write = (path: string, text: string) => writeFile(join(OUT, path), text);
 
 function breadcrumbs(crumbs: Page["crumbs"]): string {
   if (!siteUrl || !crumbs.length) return "";

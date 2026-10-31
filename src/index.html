@@ -15,8 +15,8 @@
     {{#icon.s}}<link rel="icon" type="image/svg+xml" href="./icons/s.svg">{{/icon.s}}
     {{#icon.p}}<link rel="icon" type="image/svg+xml" href="./icons/p.svg">{{/icon.p}}
     {{#icon.e}}<link rel="icon" type="image/svg+xml" href="./icons/e.svg">{{/icon.e}}
-    {{#canonical}}<meta property="og:url" content="{{ canonical }}">{{/canonical}}
-    {{#canonical}}<link rel="canonical" href="{{ canonical }}">{{/canonical}}
+    {{#canonical}}<meta property="og:url" content="{{ canonical }}">
+    <link rel="canonical" href="{{ canonical }}">{{/canonical}}
     {{#image}}<meta property="og:image" content="{{ image }}">
     <meta property="og:image:type" content="image/webp">
     <meta property="og:image:width" content="1200">
@@ -38,8 +38,8 @@
       class="flex flex-wrap items-center gap-4 bg-ink-300 px-4 py-2.5 text-sm text-white dark:bg-ink-400 dark:text-steel-200">
       <a
         class="text-lg font-bold hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300"
-        href=".">Evrima Object Dump</a>
-      <span id="stamp"
+        href=".">{{ name }}</a>
+      <span
         class="ml-auto opacity-85 max-md:ml-0"><span class="max-md:hidden">Server </span>{{ version }}{{#commit}}<span class="max-md:hidden"> · <a class="hover:underline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300" href="https://github.com/{{ repo }}/commit/{{ sha }}">{{ short }}</a></span>{{/commit}}</span>
       <button type="button" id="menu" aria-label="Search" aria-controls="side"
         aria-expanded="false"
@@ -73,7 +73,7 @@
         <div id="list"
           class="focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 flex-1 overflow-auto py-1.5 font-mono text-sm"></div>
       </aside>
-      <main id="main" tabindex="-1"
+      <main tabindex="-1"
         class="focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 min-w-0 flex-1 overflow-auto px-7 pt-5 pb-15 max-md:p-4">
         {{{main}}}
       </main>

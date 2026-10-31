@@ -5,14 +5,6 @@
         "deno": {
           "enable": true
         }
-      },
-      "tailwindcss-language-server": {
-        "settings": {
-          "classFunctions": ["cva", "cx"],
-          "experimental": {
-            "classRegex": ["[cls|className]\\s\\:\\=\\s\"([^\"]*)"]
-          }
-        }
       }
     },
     "json-language-server": {
@@ -33,16 +25,6 @@
     }
   },
   "languages": {
-    "JavaScript": {
-      "language_servers": [
-        "deno",
-        "!typescript-language-server",
-        "!vtsls",
-        "!eslint"
-      ],
-      "formatter": "language_server",
-      "format_on_save": "on"
-    },
     "TypeScript": {
       "language_servers": [
         "deno",

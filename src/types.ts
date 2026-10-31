@@ -24,16 +24,12 @@ export type ClassRow = [
   pkg: number,
   parent: number,
   isStruct: 0 | 1,
-  shard: number,
 ];
 
 export interface Meta {
-  source: string;
-  lines: number;
   counts: { fields: number; methods: number };
   pk: string[];
   c: ClassRow[];
-  shards: number;
 }
 
 export interface SearchIndex {

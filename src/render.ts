@@ -10,8 +10,7 @@ export interface Cls {
   path: string;
 }
 
-export const ICONS = ["C", "S", "P", "E"] as const;
-export type Icon = (typeof ICONS)[number];
+export type Icon = "C" | "S" | "P" | "E";
 
 export interface Page {
   title: string;
@@ -22,6 +21,9 @@ export interface Page {
   card: string | null;
   main: string;
 }
+
+const label = (p: string) => p || "(none)";
+const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
 
 const FOCUS =
   "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300";
@@ -50,7 +52,7 @@ export class Renderer {
 
   public constructor(
     private readonly meta: Meta,
-    private readonly members: Map<number, Members>,
+    private readonly members: Record<number, Members>,
     private readonly name: string,
     private readonly version: string,
   ) {
@@ -117,7 +119,7 @@ export class Renderer {
             `<tr class="${ROW}"><td class="${CELL}"><a class="${LINK}" href="${
               esc(pkgUrl(p))
             }">${
-              esc(p || "(none)")
+              esc(label(p))
             }</a></td><td class="${DIM_CELL}">${n.toLocaleString()}</td></tr>`,
         )
         .join("") +
@@ -142,20 +144,20 @@ export class Renderer {
     const list = this.pkgClasses[i];
     const structs = list.filter((c) => c.struct).length;
     return {
-      title: `${pkg || "(none)"} package`,
+      title: `${label(pkg)} package`,
       description: `${this.game} documentation of package ${
-        pkg || "(none)"
+        label(pkg)
       }: its classes and structs.`,
       indexable: true,
       icon: "P",
-      crumbs: [[this.name, ""], [pkg || "(none)", pkgUrl(pkg)]],
-      card: this.card("P", "Package", pkg || "(none)", "", "", [
+      crumbs: [[this.name, ""], [label(pkg), pkgUrl(pkg)]],
+      card: this.card("P", "Package", label(pkg), "", "", [
         [list.length - structs, "classes"],
         [structs, "structs"],
       ]),
       main:
         `<div class="wrap-anywhere font-mono text-sm ${MUTED}">Package</div><h1 class="mb-3.5 font-serif text-3xl font-bold">${
-          esc(pkg || "(none)")
+          esc(label(pkg))
         }</h1>` +
         `<h2 class="${HEADING}">Classes and structs (${list.length.toLocaleString()})</h2><div class="${BOX}"><table class="w-full font-mono text-sm">` +
         list
@@ -185,14 +187,8 @@ export class Renderer {
       ancestors.push(a);
     }
     const mm = this.membersOf(c);
-    const chain: Cls[] = [];
-    for (
-      let a: Cls | undefined = c;
-      a && chain.length < 64;
-      a = this.classes[a.sup]
-    ) {
-      chain.unshift(a);
-    }
+    const chain = [...ancestors].reverse();
+    chain.push(c);
     const tree = chain
       .map((a, i) =>
         (i ? `${"   ".repeat(i - 1)}└─ ` : "") +
@@ -204,7 +200,7 @@ export class Renderer {
     let h =
       `<div class="wrap-anywhere font-mono text-sm ${MUTED}"><a class="${LINK}" href="${
         esc(pkgUrl(pkg))
-      }">${esc(pkg)}</a></div>`;
+      }">${esc(label(pkg))}</a></div>`;
     h +=
       `<h1 class="mb-3.5 font-serif text-3xl font-bold">${
         c.struct ? "Struct" : "Class"
@@ -274,7 +270,7 @@ export class Renderer {
       icon: c.struct ? "S" : "C",
       crumbs: [
         [this.name, ""],
-        [pkg || "(none)", pkgUrl(pkg)],
+        [label(pkg), pkgUrl(pkg)],
         [c.name, classUrl(c.path)],
       ],
       card: this.card(
@@ -340,7 +336,7 @@ export class Renderer {
   }
 
   private membersOf(c: Cls): Members {
-    return this.members.get(c.i) ?? { f: [], m: [] };
+    return this.members[c.i] ?? { f: [], m: [] };
   }
 
   private hex(n: number): string {
@@ -390,7 +386,9 @@ export class Renderer {
       h +=
         `<details class="my-2 text-sm"><summary class="cursor-pointer font-semibold ${FOCUS}">Inherited from ${
           esc(a.name)
-        } (${mm.f.length} fields, ${mm.m.length} methods)</summary>` +
+        } (${plural(mm.f.length, "field")}, ${
+          plural(mm.m.length, "method")
+        })</summary>` +
         (mm.f.length
           ? `<p class="wrap-anywhere my-1.5 ml-3.5 font-mono"><b>Fields:</b> ${
             names(mm.f, "")

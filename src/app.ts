@@ -15,8 +15,15 @@ const searchUrls = import.meta.glob<string>("./data/search.json", {
   import: "default",
 });
 
-const $ = <T extends HTMLElement = HTMLElement>(selector: string): T =>
-  document.querySelector<T>(selector)!;
+const input = document.querySelector<HTMLInputElement>("#q")!;
+const nativeOnly = document.querySelector<HTMLInputElement>("#nat")!;
+const list = document.querySelector<HTMLElement>("#list")!;
+const side = document.querySelector<HTMLElement>("#side")!;
+const menu = document.querySelector<HTMLButtonElement>("#menu")!;
+const main = document.querySelector<HTMLElement>("main")!;
+const navigationProgress = document.querySelector<HTMLElement>(
+  "#navigation-progress",
+)!;
 
 const ITEM =
   "group block truncate focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 px-3 py-px max-md:py-1.5 max-md:text-base hover:bg-steel-300 aria-[current]:bg-steel-300 aria-[current]:font-bold dark:hover:bg-ink-600 dark:aria-[current]:bg-ink-600";
@@ -79,9 +86,8 @@ function item(path: string, id: string, badge: string, label: string) {
 
 async function renderList() {
   const token = ++listToken;
-  const list = $("#list");
-  const q = $<HTMLInputElement>("#q").value.trim().toLowerCase();
-  const nat = $<HTMLInputElement>("#nat").checked;
+  const q = input.value.trim().toLowerCase();
+  const nat = nativeOnly.checked;
   if (!searchIndex) list.innerHTML = `<h3 class="${HEADING}">Searching…</h3>`;
   let s: Search;
   try {
@@ -136,7 +142,7 @@ async function renderList() {
 
 function syncQuery() {
   const u = new URL(location.href);
-  const q = $<HTMLInputElement>("#q").value.trim();
+  const q = input.value.trim();
   if (q) u.searchParams.set("q", q);
   else u.searchParams.delete("q");
   history.replaceState(history.state, "", u);
@@ -144,34 +150,34 @@ function syncQuery() {
 }
 
 function setMenu(open: boolean) {
-  const inside = $("#side").contains(document.activeElement);
-  $("#menu").setAttribute("aria-expanded", String(open));
-  $("#menu").setAttribute("aria-label", open ? "Close search" : "Search");
-  $("#side").toggleAttribute("data-open", open);
-  if (open) $("#q").focus();
-  else if (inside) $("#menu").focus();
+  const inside = side.contains(document.activeElement);
+  menu.setAttribute("aria-expanded", String(open));
+  menu.setAttribute("aria-label", open ? "Close search" : "Search");
+  side.toggleAttribute("data-open", open);
+  if (open) input.focus();
+  else if (inside) menu.focus();
 }
 
 document.addEventListener("keydown", (e) => {
   const tag = document.activeElement?.tagName ?? "";
   if (e.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") {
     e.preventDefault();
-    $("#q").focus();
+    input.focus();
   } else if (e.key === "Escape") {
-    if ($("#side").hasAttribute("data-open")) setMenu(false);
-    else if (document.activeElement === $("#q")) $("#q").blur();
+    if (side.hasAttribute("data-open")) setMenu(false);
+    else if (document.activeElement === input) input.blur();
   }
 });
 
-$("#menu").addEventListener("click", () => {
-  setMenu($("#menu").getAttribute("aria-expanded") !== "true");
+menu.addEventListener("click", () => {
+  setMenu(menu.getAttribute("aria-expanded") !== "true");
 });
 
-$("#side").addEventListener("click", (e) => {
+side.addEventListener("click", (e) => {
   if ((e.target as Element).closest("a")) setMenu(false);
 });
 
-$("#q").addEventListener("input", () => {
+input.addEventListener("input", () => {
   clearTimeout(timer);
   timer = setTimeout(() => {
     syncQuery();
@@ -179,23 +185,16 @@ $("#q").addEventListener("input", () => {
   }, 150);
 });
 
-$("#nat").addEventListener("change", () => {
-  writePref(
-    () => localStorage,
-    "native",
-    $<HTMLInputElement>("#nat").checked ? "1" : "0",
-  );
+nativeOnly.addEventListener("change", () => {
+  writePref(() => localStorage, "native", nativeOnly.checked ? "1" : "0");
   renderList();
 });
 
-$<HTMLInputElement>("#q").value =
-  new URLSearchParams(location.search).get("q") ||
+input.value = new URLSearchParams(location.search).get("q") ||
   readPref(() => sessionStorage, "q") || "";
-$<HTMLInputElement>("#nat").checked =
-  readPref(() => localStorage, "native") !== "0";
+nativeOnly.checked = readPref(() => localStorage, "native") !== "0";
 renderList();
 
-const navigationProgress = $("#navigation-progress") as HTMLDivElement;
 let progressShowTimer: ReturnType<typeof setTimeout> | undefined;
 let progressStepTimer: ReturnType<typeof setInterval> | undefined;
 let progressFinishTimer: ReturnType<typeof setTimeout> | undefined;
@@ -258,7 +257,6 @@ async function navigate(url: URL, push: boolean, scrollTop?: number) {
   const controller = new AbortController();
   navigation = controller;
   startProgress();
-  const main = $("#main");
 
   if (push) {
     history.replaceState(
@@ -285,7 +283,7 @@ async function navigate(url: URL, push: boolean, scrollTop?: number) {
       await response.text(),
       "text/html",
     );
-    const nextMain = doc.querySelector("#main");
+    const nextMain = doc.querySelector("main");
 
     if (!nextMain || !doc.title) throw new Error("Invalid page response");
     if (controller.signal.aborted) return;

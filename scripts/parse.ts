@@ -71,7 +71,6 @@ export interface ModelClass {
 }
 
 export interface Model {
-  lines: number;
   packages: string[];
   classes: ModelClass[];
   entries: Map<number, Members>;
@@ -80,10 +79,7 @@ export interface Model {
 
 async function* readLines(path: string): AsyncGenerator<string> {
   const file = await Deno.open(path);
-  const bytes = path.endsWith(".gz")
-    ? file.readable.pipeThrough(new DecompressionStream("gzip"))
-    : file.readable;
-  const reader = bytes.pipeThrough(new TextDecoderStream()).getReader();
+  const reader = file.readable.pipeThrough(new TextDecoderStream()).getReader();
   let tail = "";
   for (;;) {
     const { done, value } = await reader.read();
@@ -188,7 +184,7 @@ function byName(a: { n: string }, b: { n: string }) {
   return x < y ? -1 : x > y ? 1 : 0;
 }
 
-function resolve(raw: Raw, lines: number): Model {
+function resolve(raw: Raw): Model {
   const sorted = raw.classes.sort((a, b) =>
     a.path < b.path ? -1 : a.path > b.path ? 1 : 0
   );
@@ -254,7 +250,7 @@ function resolve(raw: Raw, lines: number): Model {
     entries.set(i, { f, m });
   });
 
-  return { lines, packages, classes, entries, counts: { fields, methods } };
+  return { packages, classes, entries, counts: { fields, methods } };
 }
 
 export async function parseDump(path: string): Promise<Model> {
@@ -264,10 +260,6 @@ export async function parseDump(path: string): Promise<Model> {
     methods: new Map(),
     inner: new Map(),
   };
-  let lines = 0;
-  for await (const line of readLines(path)) {
-    lines++;
-    ingest(raw, line);
-  }
-  return resolve(raw, lines);
+  for await (const line of readLines(path)) ingest(raw, line);
+  return resolve(raw);
 }

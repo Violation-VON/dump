@@ -25,7 +25,9 @@ Pushes to `main` deploy to Vercel (`vercel.json`) and to GitHub Pages as a
 backup (`.github/workflows/pages.yml`).
 
 - `SITE_URL`: absolute site URL used for canonical links, sitemaps, and
-  `robots.txt`. Both deployments set it automatically.
+  `robots.txt`. Vercel sets it automatically. The GitHub Pages backup reads it
+  from the `SITE_URL` repository variable, which should be the Vercel URL so the
+  backup's canonical links point at the primary site.
 - `INDEXNOW_KEY`: optional. When set, the build serves the key file, and
   production builds on Vercel submit the sitemap URLs to IndexNow.
 

@@ -1,28 +1,10 @@
 import { type Model, parseDump } from "./parse.ts";
-import type { Members, Meta, SearchIndex } from "../src/types.ts";
+import type { Meta, SearchIndex } from "../src/types.ts";
+import { write } from "./write.ts";
 
 const OUT = "src/data";
 const STAMP = `${OUT}/stamp`;
-const SHARD_BYTES = 1_500_000;
 const SOURCES = ["scripts/data.ts", "scripts/parse.ts", "src/types.ts"];
-
-async function exists(path: string): Promise<boolean> {
-  try {
-    await Deno.stat(path);
-    return true;
-  } catch (e) {
-    if (e instanceof Deno.errors.NotFound) return false;
-    throw e;
-  }
-}
-
-async function findDump(): Promise<string> {
-  const candidates = ["UE4SS_ObjectDump.txt", "UE4SS_ObjectDump.txt.gz"];
-  for (const path of candidates) {
-    if (await exists(path)) return path;
-  }
-  throw new Error("No dump found.");
-}
 
 function hex(buffer: ArrayBuffer): string {
   return Array.from(
@@ -55,35 +37,12 @@ async function readStamp(): Promise<string | null> {
   }
 }
 
-async function write(path: string, text: string) {
-  await Deno.mkdir(path.slice(0, path.lastIndexOf("/")), { recursive: true });
-  await Deno.writeTextFile(path, text);
-}
-
 function writeJson(path: string, value: unknown) {
   return write(path, JSON.stringify(value));
 }
 
-async function writeShards(model: Model) {
-  const shardOf: number[] = new Array(model.classes.length).fill(-1);
-  let shard: Record<number, Members> = {};
-  let size = 0;
-  let count = 0;
-  const flush = async () => {
-    if (!size) return;
-    await writeJson(`${OUT}/m/${count}.json`, shard);
-    count++;
-    shard = {};
-    size = 0;
-  };
-  for (const [i, entry] of model.entries) {
-    shard[i] = entry;
-    shardOf[i] = count;
-    size += JSON.stringify(entry).length;
-    if (size >= SHARD_BYTES) await flush();
-  }
-  await flush();
-  return { shardOf, count };
+function writeMembers(model: Model) {
+  return writeJson(`${OUT}/members.json`, Object.fromEntries(model.entries));
 }
 
 function writeSearch(model: Model) {
@@ -109,10 +68,10 @@ function writeSearch(model: Model) {
   return writeJson(`${OUT}/search.json`, index);
 }
 
-const dump = await findDump();
+const dump = "UE4SS_ObjectDump.txt";
 const stamp = await fingerprint(dump);
 
-if (!Deno.args.includes("--force") && await readStamp() === stamp) {
+if (await readStamp() === stamp) {
   console.log("Data is up to date.");
 } else {
   console.log(`Parsing ${dump}`);
@@ -125,28 +84,19 @@ if (!Deno.args.includes("--force") && await readStamp() === stamp) {
     if (!(e instanceof Deno.errors.NotFound)) throw e;
   });
 
-  const { shardOf, count } = await writeShards(model);
+  await writeMembers(model);
   await writeSearch(model);
   const meta: Meta = {
-    source: dump.split(/[\\/]/).pop()!,
-    lines: model.lines,
     counts: model.counts,
     pk: model.packages,
-    c: model.classes.map((c, i) => [
-      c.name,
-      c.pk,
-      c.sup,
-      c.struct ? 1 : 0,
-      shardOf[i],
-    ]),
-    shards: count,
+    c: model.classes.map((c) => [c.name, c.pk, c.sup, c.struct ? 1 : 0]),
   };
   await writeJson(`${OUT}/meta.json`, meta);
   await write(STAMP, stamp);
 
   console.log(
-    `${model.lines.toLocaleString()} lines, ${model.classes.length.toLocaleString()} classes, ` +
-      `${model.counts.fields.toLocaleString()} fields, ${model.counts.methods.toLocaleString()} methods, ` +
-      `${count} shards`,
+    `${model.classes.length.toLocaleString()} classes, ` +
+      `${model.counts.fields.toLocaleString()} fields, ` +
+      `${model.counts.methods.toLocaleString()} methods`,
   );
 }
