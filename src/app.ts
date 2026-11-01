@@ -1,5 +1,5 @@
 import type { SearchIndex } from "./types.ts";
-import { classUrl, esc } from "./shared.ts";
+import { esc, typeUrl } from "./shared.ts";
 
 interface Search {
   idx: SearchIndex;
@@ -79,7 +79,7 @@ function getSearch(): Promise<Search> {
 }
 
 function item(path: string, id: string, badge: string, label: string) {
-  return `<a class="${ITEM}" href="${esc(classUrl(path) + id)}" title="${
+  return `<a class="${ITEM}" href="${esc(typeUrl(path) + id)}" title="${
     esc(path)
   }"><span class="${BADGE}">${badge}</span>${esc(label)}</a>`;
 }
@@ -133,14 +133,14 @@ async function renderList() {
     let mh = "";
     let n = 0;
     for (let i = 0; i < idx.n.length; i++) {
-      if (!memberLower[i].includes(q) || !shown(idx.c[i])) continue;
+      if (!memberLower[i].includes(q) || !shown(idx.o[i])) continue;
       if (++n > 200) break;
       const m = idx.k[i] === "m";
       mh += item(
-        idx.t[idx.c[i]],
+        idx.t[idx.o[i]],
         `#${encodeURIComponent(m ? `${idx.n[i]}()` : idx.n[i])}`,
         idx.k[i],
-        `${names[idx.c[i]]}.${idx.n[i]}`,
+        `${names[idx.o[i]]}.${idx.n[i]}`,
       );
     }
     h += `<h3 class="${HEADING}">${

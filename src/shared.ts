@@ -11,7 +11,7 @@ export const esc = (s: unknown) =>
 const ePath = (p: string) =>
   encodeURI(p).replace(/[#?]/g, encodeURIComponent).replace(/^\//, "");
 
-export const classUrl = (path: string, id?: string) =>
+export const typeUrl = (path: string, id?: string) =>
   `${ePath(path.replace(/\.(?=[^.]*$)/, "/"))}${
     id ? `#${encodeURIComponent(id)}` : ""
   }`;

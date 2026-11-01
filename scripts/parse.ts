@@ -1,4 +1,10 @@
-import type { Field, Members, Method, TypeDesc } from "../src/types.ts";
+import {
+  type Field,
+  Kind,
+  type Members,
+  type Method,
+  type TypeDesc,
+} from "../src/types.ts";
 
 const ATTR = /\[(\w+): ([0-9A-Fa-f]+)\]/g;
 
@@ -29,13 +35,13 @@ const OBJECT_TYPES = new Set([
   "InterfaceProperty",
 ]);
 
-interface RawClass {
+interface RawType {
   addr: string;
   path: string;
   pkg: string;
   name: string;
   sup: string | null;
-  kind: 0 | 1 | 2;
+  kind: Kind;
 }
 
 interface Typed {
@@ -57,7 +63,7 @@ interface RawMethod {
 }
 
 interface Raw {
-  classes: RawClass[];
+  types: RawType[];
   members: Map<string, { f: RawProp[]; m: RawMethod[] }>;
   methods: Map<string, RawMethod>;
   inner: Map<string, Typed>;
@@ -65,17 +71,17 @@ interface Raw {
   lastEnum: string;
 }
 
-export interface ModelClass {
+export interface ModelType {
   path: string;
   name: string;
   pk: number;
   sup: number;
-  kind: 0 | 1 | 2;
+  kind: Kind;
 }
 
 export interface Model {
   packages: string[];
-  classes: ModelClass[];
+  types: ModelType[];
   entries: Map<number, Members>;
   counts: { fields: number; methods: number; values: number };
 }
@@ -140,10 +146,10 @@ function ingest(raw: Raw, line: string) {
   }
   const isStruct = type === "ScriptStruct";
   const isEnum = type.endsWith("Enum");
-  const isClass = type === "Class" || isStruct || isEnum;
+  const isType = type === "Class" || isStruct || isEnum;
   const isFunction = type === "Function";
   const isProperty = type.endsWith("Property");
-  if (!isClass && !isFunction && !isProperty) return;
+  if (!isType && !isFunction && !isProperty) return;
 
   let s2 = line.indexOf(" ", s1 + 1);
   if (s2 < 0) s2 = line.length;
@@ -154,16 +160,16 @@ function ingest(raw: Raw, line: string) {
     for (const m of line.slice(s2).matchAll(ATTR)) at[m[1]] = m[2];
   }
 
-  if (isClass) {
+  if (isType) {
     if (isEnum) raw.lastEnum = path;
     const dot = path.lastIndexOf(".");
-    raw.classes.push({
+    raw.types.push({
       addr,
       path,
       pkg: dot > 0 ? path.slice(0, dot) : "",
       name: dot > 0 ? path.slice(dot + 1) : path,
       sup: at.sps || null,
-      kind: isEnum ? 2 : isStruct ? 1 : 0,
+      kind: isEnum ? Kind.Enum : isStruct ? Kind.Struct : Kind.Class,
     });
     return;
   }
@@ -222,7 +228,7 @@ function dropMax(name: string, vs: [string, string][]) {
 }
 
 function resolve(raw: Raw): Model {
-  const sorted = raw.classes.sort((a, b) =>
+  const sorted = raw.types.sort((a, b) =>
     a.path < b.path ? -1 : a.path > b.path ? 1 : 0
   );
   const indexByAddr = new Map<string, number>();
@@ -230,7 +236,7 @@ function resolve(raw: Raw): Model {
 
   const packages: string[] = [];
   const packageIndex = new Map<string, number>();
-  const classes = sorted.map((c): ModelClass => {
+  const types = sorted.map((c): ModelType => {
     let pk = packageIndex.get(c.pkg);
     if (pk === undefined) {
       pk = packages.length;
@@ -252,7 +258,7 @@ function resolve(raw: Raw): Model {
     if (p.av) {
       for (const a of p.av) {
         const k = indexByAddr.get(a);
-        if (k !== undefined && classes[k].kind === 2) return ["e", k];
+        if (k !== undefined && types[k].kind === Kind.Enum) return ["e", k];
       }
     }
     if (p.t === "ArrayProperty" || p.t === "SetProperty") {
@@ -274,7 +280,7 @@ function resolve(raw: Raw): Model {
   let fields = 0;
   let methods = 0;
   let values = 0;
-  classes.forEach((c, i) => {
+  types.forEach((c, i) => {
     const mm = raw.members.get(c.path) ?? { f: [], m: [] };
     const all = raw.values.get(c.path);
     const vs = all && dropMax(c.name, all);
@@ -301,12 +307,12 @@ function resolve(raw: Raw): Model {
     entries.set(i, entry);
   });
 
-  return { packages, classes, entries, counts: { fields, methods, values } };
+  return { packages, types, entries, counts: { fields, methods, values } };
 }
 
 export async function parseDump(path: string): Promise<Model> {
   const raw: Raw = {
-    classes: [],
+    types: [],
     members: new Map(),
     methods: new Map(),
     inner: new Map(),

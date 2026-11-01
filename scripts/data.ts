@@ -1,5 +1,5 @@
 import { type Model, parseDump } from "./parse.ts";
-import type { Meta, SearchIndex } from "../src/types.ts";
+import { KINDS, type Meta, type SearchIndex } from "../src/types.ts";
 import { write } from "./write.ts";
 
 const OUT = "src/data";
@@ -47,26 +47,26 @@ function writeMembers(model: Model) {
 
 function writeSearch(model: Model) {
   const index: SearchIndex = {
-    t: model.classes.map((c) => c.path),
-    s: model.classes.map((c) => "CSE"[c.kind]).join(""),
+    t: model.types.map((c) => c.path),
+    s: model.types.map((c) => KINDS[c.kind].letter).join(""),
     n: [],
-    c: [],
+    o: [],
     k: "",
   };
   for (const [i, entry] of model.entries) {
     for (const f of entry.f) {
       index.n.push(f[0]);
-      index.c.push(i);
+      index.o.push(i);
       index.k += "f";
     }
     for (const m of entry.m) {
       index.n.push(m[0]);
-      index.c.push(i);
+      index.o.push(i);
       index.k += "m";
     }
     for (const v of entry.v ?? []) {
       index.n.push(v[0]);
-      index.c.push(i);
+      index.o.push(i);
       index.k += "v";
     }
   }
@@ -81,8 +81,8 @@ if (await readStamp() === stamp) {
 } else {
   console.log(`Parsing ${dump}`);
   const model = await parseDump(dump);
-  if (!model.classes.length) {
-    throw new Error("No classes found. Is this a UE4SS object dump?");
+  if (!model.types.length) {
+    throw new Error("No types found. Is this a UE4SS object dump?");
   }
 
   await Deno.remove(OUT, { recursive: true }).catch((e) => {
@@ -94,13 +94,13 @@ if (await readStamp() === stamp) {
   const meta: Meta = {
     counts: model.counts,
     pk: model.packages,
-    c: model.classes.map((c) => [c.name, c.pk, c.sup, c.kind]),
+    t: model.types.map((c) => [c.name, c.pk, c.sup, c.kind]),
   };
   await writeJson(`${OUT}/meta.json`, meta);
   await write(STAMP, stamp);
 
   console.log(
-    `${model.classes.length.toLocaleString()} classes, ` +
+    `${model.types.length.toLocaleString()} types, ` +
       `${model.counts.fields.toLocaleString()} fields, ` +
       `${model.counts.methods.toLocaleString()} methods, ` +
       `${model.counts.values.toLocaleString()} enum values`,

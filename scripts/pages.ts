@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { xxhash128 } from "hash-wasm";
 import Mustache from "mustache";
 import { type Page, Renderer } from "../src/render.ts";
-import { classUrl, esc, pkgUrl } from "../src/shared.ts";
+import { esc, pkgUrl, typeUrl } from "../src/shared.ts";
 import type { Members, Meta } from "../src/types.ts";
 import { write as writeFile } from "./write.ts";
 
@@ -57,9 +57,9 @@ function* pages(): Generator<Entry> {
     const url = pkgUrl(site.packages[i]);
     yield { file: `${decodeURIComponent(url)}.html`, url, page: site.pkg(i) };
   }
-  for (const c of site.classes) {
-    const url = classUrl(c.path);
-    yield { file: `${decodeURIComponent(url)}.html`, url, page: site.cls(c) };
+  for (const c of site.types) {
+    const url = typeUrl(c.path);
+    yield { file: `${decodeURIComponent(url)}.html`, url, page: site.type(c) };
   }
 }
 

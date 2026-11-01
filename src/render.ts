@@ -1,12 +1,18 @@
-import type { Members, Meta, TypeDesc } from "./types.ts";
-import { classUrl, esc, pkgUrl } from "./shared.ts";
+import {
+  Kind,
+  KINDS,
+  type Members,
+  type Meta,
+  type TypeDesc,
+} from "./types.ts";
+import { esc, pkgUrl, typeUrl } from "./shared.ts";
 
-export interface Cls {
+export interface TypeEntry {
   i: number;
   name: string;
   pk: number;
   sup: number;
-  kind: 0 | 1 | 2;
+  kind: Kind;
   path: string;
 }
 
@@ -22,8 +28,6 @@ export interface Page {
   main: string;
 }
 
-const KINDS = ["class", "struct", "enum"] as const;
-const ICONS: Icon[] = ["C", "S", "E"];
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 const label = (p: string) => p || "(none)";
 const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
@@ -48,10 +52,10 @@ const MEMBER =
 const MEMBER_ROW = `group target:bg-straw-100 dark:target:bg-straw-900 ${ROW}`;
 
 export class Renderer {
-  public readonly classes: Cls[];
+  public readonly types: TypeEntry[];
   public readonly packages: string[];
-  private readonly children = new Map<number, Cls[]>();
-  private readonly pkgClasses: Cls[][];
+  private readonly children = new Map<number, TypeEntry[]>();
+  private readonly pkgTypes: TypeEntry[][];
 
   public constructor(
     private readonly meta: Meta,
@@ -60,7 +64,7 @@ export class Renderer {
     private readonly version: string,
   ) {
     this.packages = meta.pk;
-    this.classes = meta.c.map(([n, pk, sup, st], i) => ({
+    this.types = meta.t.map(([n, pk, sup, st], i) => ({
       i,
       name: n,
       pk,
@@ -68,9 +72,9 @@ export class Renderer {
       kind: st,
       path: meta.pk[pk] ? `${meta.pk[pk]}.${n}` : n,
     }));
-    this.pkgClasses = meta.pk.map((): Cls[] => []);
-    for (const c of this.classes) {
-      this.pkgClasses[c.pk].push(c);
+    this.pkgTypes = meta.pk.map((): TypeEntry[] => []);
+    for (const c of this.types) {
+      this.pkgTypes[c.pk].push(c);
       if (c.sup >= 0) {
         if (!this.children.has(c.sup)) this.children.set(c.sup, []);
         this.children.get(c.sup)!.push(c);
@@ -80,12 +84,12 @@ export class Renderer {
 
   public home(): Page {
     const sizes = this.meta.pk
-      .map((p, i): [string, number] => [p, this.pkgClasses[i].length])
+      .map((p, i): [string, number] => [p, this.pkgTypes[i].length])
       .sort((a, b) => b[1] - a[1]);
     const native = sizes.filter(([p]) => p.startsWith("/Script/"));
     const other = sizes.filter(([p]) => !p.startsWith("/Script/"));
-    const structs = this.classes.filter((c) => c.kind === 1).length;
-    const enums = this.classes.filter((c) => c.kind === 2).length;
+    const structs = this.types.filter((c) => c.kind === Kind.Struct).length;
+    const enums = this.types.filter((c) => c.kind === Kind.Enum).length;
     return {
       title: "",
       description:
@@ -105,7 +109,7 @@ export class Renderer {
           esc(pkgUrl("/Script/TheIsle"))
         }">/Script/TheIsle</a>, and all packages are listed below.</p></div>` +
         `<div class="mt-3 mb-2 flex flex-wrap gap-x-7 gap-y-2 text-sm"><span><b class="block text-xl">${
-          (this.classes.length - structs - enums).toLocaleString()
+          (this.types.length - structs - enums).toLocaleString()
         }</b>classes</span>` +
         `<span><b class="block text-xl">${structs.toLocaleString()}</b>structs</span>` +
         `<span><b class="block text-xl">${enums.toLocaleString()}</b>enums</span>` +
@@ -147,9 +151,9 @@ export class Renderer {
 
   public pkg(i: number): Page {
     const pkg = this.meta.pk[i];
-    const list = this.pkgClasses[i];
-    const structs = list.filter((c) => c.kind === 1).length;
-    const enums = list.filter((c) => c.kind === 2).length;
+    const list = this.pkgTypes[i];
+    const structs = list.filter((c) => c.kind === Kind.Struct).length;
+    const enums = list.filter((c) => c.kind === Kind.Enum).length;
     return {
       title: `${label(pkg)} package`,
       description: `${this.game} documentation of package ${
@@ -172,11 +176,11 @@ export class Renderer {
           .map(
             (c) =>
               `<tr class="${ROW}"><td class="${TYPE_CELL}">${
-                KINDS[c.kind]
+                KINDS[c.kind].name
               }</td><td class="${CELL}">${this.link(c)}</td>` +
               `<td class="${DIM_CELL}">${
-                this.classes[c.sup]
-                  ? `extends ${this.link(this.classes[c.sup])}`
+                this.types[c.sup]
+                  ? `extends ${this.link(this.types[c.sup])}`
                   : ""
               }</td></tr>`,
           )
@@ -185,12 +189,12 @@ export class Renderer {
     };
   }
 
-  public cls(c: Cls): Page {
-    const ancestors: Cls[] = [];
+  public type(c: TypeEntry): Page {
+    const ancestors: TypeEntry[] = [];
     for (
-      let a: Cls | undefined = this.classes[c.sup];
+      let a: TypeEntry | undefined = this.types[c.sup];
       a && ancestors.length < 64;
-      a = this.classes[a.sup]
+      a = this.types[a.sup]
     ) {
       ancestors.push(a);
     }
@@ -210,13 +214,13 @@ export class Renderer {
         esc(pkgUrl(pkg))
       }">${esc(label(pkg))}</a></div>`;
     h +=
-      `<h1 class="mb-3.5 font-serif text-3xl font-bold">${cap(KINDS[c.kind])} ${
-        esc(c.name)
-      }</h1>` +
+      `<h1 class="mb-3.5 font-serif text-3xl font-bold">${
+        cap(KINDS[c.kind].name)
+      } ${esc(c.name)}</h1>` +
       `<pre class="overflow-auto border border-steel-500 bg-steel-50 px-3.5 py-2.5 font-mono text-sm dark:border-ink-500 dark:bg-ink-900">${tree}</pre>`;
     if (kids.length) {
       h += `<div class="my-2.5 font-serif text-sm"><b>${
-        c.kind === 1 ? "Child structs" : "Direct subclasses"
+        c.kind === Kind.Struct ? "Child structs" : "Direct subclasses"
       }:</b> ${kids.slice(0, 60).map((k) => this.link(k)).join(", ")}`;
       h += kids.length > 60 ? ` and ${kids.length - 60} more</div>` : "</div>";
     }
@@ -232,7 +236,7 @@ export class Renderer {
                   this.tstr(t)
                 }</td>` +
                 `<td class="${CELL}"><a class="${MEMBER}" href="${
-                  esc(classUrl(c.path, n))
+                  esc(typeUrl(c.path, n))
                 }">${esc(n)}</a></td><td class="${DIM_CELL}">${
                   this.hex(o)
                 }</td></tr>`,
@@ -252,7 +256,7 @@ export class Renderer {
                   r ? this.tstr(r) : "void"
                 }</td>` +
                 `<td class="${CELL}"><a class="${MEMBER}" href="${
-                  esc(classUrl(c.path, `${n}()`))
+                  esc(typeUrl(c.path, `${n}()`))
                 }">${esc(n)}</a>` +
                 `(${
                   ps.map(([pn, pt]) => `${this.tstr(pt)} ${esc(pn)}`).join(", ")
@@ -272,7 +276,7 @@ export class Renderer {
                 }" class="${MEMBER_ROW}"><td class="${TYPE_CELL}">${
                   esc(v)
                 }</td><td class="${CELL}"><a class="${MEMBER}" href="${
-                  esc(classUrl(c.path, n))
+                  esc(typeUrl(c.path, n))
                 }">${esc(n)}</a></td></tr>`,
             )
             .join("")
@@ -282,27 +286,29 @@ export class Renderer {
       h +=
         `<p class="my-4 font-serif ${MUTED}">Nothing declared on this type.</p>`;
     }
-    const parent = this.classes[c.sup];
-    const kind = KINDS[c.kind];
-    const stats: [number, string][] = c.kind === 2
+    const parent = this.types[c.sup];
+    const kind = KINDS[c.kind].name;
+    const stats: [number, string][] = c.kind === Kind.Enum
       ? [[mm.v?.length ?? 0, "values"]]
       : [[mm.f.length, "fields"]];
-    if (c.kind === 0 || mm.m.length) stats.push([mm.m.length, "methods"]);
+    if (c.kind === Kind.Class || mm.m.length) {
+      stats.push([mm.m.length, "methods"]);
+    }
     return {
       title: `${c.name} ${kind} (${pkg})`,
       description: `${this.game} documentation of ${kind} ${c.name}${
         pkg ? ` in package ${pkg}` : ""
       }${parent ? `, which extends ${parent.name}` : ""}.`,
       indexable: mm.f.length + mm.m.length + (mm.v?.length ?? 0) > 0,
-      icon: ICONS[c.kind],
+      icon: KINDS[c.kind].letter,
       crumbs: [
         [this.name, ""],
         [label(pkg), pkgUrl(pkg)],
-        [c.name, classUrl(c.path)],
+        [c.name, typeUrl(c.path)],
       ],
       card: this.card(
-        ICONS[c.kind],
-        cap(KINDS[c.kind]),
+        KINDS[c.kind].letter,
+        cap(KINDS[c.kind].name),
         c.name,
         pkg,
         parent ? parent.name : "",
@@ -362,7 +368,7 @@ export class Renderer {
     return `The Isle: Evrima server ${this.version}`;
   }
 
-  private membersOf(c: Cls): Members {
+  private membersOf(c: TypeEntry): Members {
     return this.members[c.i] ?? { f: [], m: [] };
   }
 
@@ -370,8 +376,8 @@ export class Renderer {
     return `0x${n.toString(16).toUpperCase()}`;
   }
 
-  private link(c: Cls): string {
-    return `<a class="${LINK}" href="${esc(classUrl(c.path))}">${
+  private link(c: TypeEntry): string {
+    return `<a class="${LINK}" href="${esc(typeUrl(c.path))}">${
       esc(c.name)
     }</a>`;
   }
@@ -385,25 +391,25 @@ export class Renderer {
         return `${d[0] === "a" ? "TArray" : "TSet"}&lt;${inner}&gt;`;
       }
       case "k": {
-        const c = this.classes[d[1]];
+        const c = this.types[d[1]];
         return `TSubclassOf&lt;${c ? this.link(c) : "UObject"}&gt;`;
       }
       case "o": {
-        const c = this.classes[d[1]];
+        const c = this.types[d[1]];
         return `${c ? this.link(c) : "UObject"}*`;
       }
       case "e": {
-        const c = this.classes[d[1]];
+        const c = this.types[d[1]];
         return c ? this.link(c) : "enum";
       }
       case "s": {
-        const c = this.classes[d[1]];
+        const c = this.types[d[1]];
         return c ? this.link(c) : "struct";
       }
     }
   }
 
-  private inherited(ancestors: Cls[]): string {
+  private inherited(ancestors: TypeEntry[]): string {
     let h = "";
     for (const a of ancestors) {
       const mm = this.membersOf(a);
@@ -411,7 +417,7 @@ export class Renderer {
       const names = (list: { 0: string }[], suffix: string) =>
         list
           .map((x) =>
-            `<a href="${esc(classUrl(a.path, x[0] + suffix))}">${esc(x[0])}</a>`
+            `<a href="${esc(typeUrl(a.path, x[0] + suffix))}">${esc(x[0])}</a>`
           )
           .join(", ");
       h +=

@@ -21,23 +21,35 @@ export interface Members {
   v?: [name: string, value: string][];
 }
 
-export type ClassRow = [
+export enum Kind {
+  Class,
+  Struct,
+  Enum,
+}
+
+export const KINDS = [
+  { name: "class", letter: "C" },
+  { name: "struct", letter: "S" },
+  { name: "enum", letter: "E" },
+] as const;
+
+export type TypeRow = [
   name: string,
   pkg: number,
   parent: number,
-  kind: 0 | 1 | 2,
+  kind: Kind,
 ];
 
 export interface Meta {
   counts: { fields: number; methods: number; values: number };
   pk: string[];
-  c: ClassRow[];
+  t: TypeRow[];
 }
 
 export interface SearchIndex {
   t: string[];
   s: string;
   n: string[];
-  c: number[];
+  o: number[];
   k: string;
 }
