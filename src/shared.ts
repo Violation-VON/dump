@@ -8,9 +8,12 @@ const ESCAPES: Record<string, string> = {
 export const esc = (s: unknown) =>
   String(s).replace(/[&<>"]/g, (c) => ESCAPES[c]);
 
-const ePath = (p: string) => encodeURI(p).replace(/[#?]/g, encodeURIComponent);
+const ePath = (p: string) =>
+  encodeURI(p).replace(/[#?]/g, encodeURIComponent).replace(/^\//, "");
 
 export const classUrl = (path: string, id?: string) =>
-  `c${ePath(path)}${id ? `#${encodeURIComponent(id)}` : ""}`;
+  `${ePath(path.replace(/\.(?=[^.]*$)/, "/"))}${
+    id ? `#${encodeURIComponent(id)}` : ""
+  }`;
 
-export const pkgUrl = (p: string) => `p${ePath(p)}`;
+export const pkgUrl = (p: string) => ePath(p);
