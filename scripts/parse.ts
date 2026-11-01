@@ -123,15 +123,21 @@ function method(raw: Raw, owner: string, name: string): RawMethod {
 
 function ingestValue(raw: Raw, line: string, token: string) {
   const owner = raw.lastEnum;
+  if (!owner) return;
   const short = owner.slice(owner.lastIndexOf(".") + 1);
-  if (!owner || !token.startsWith(`${short}::`)) return;
-  const v = /\[v: (-?\d+)\]/.exec(line);
+  const prefix = `${short}::`;
+  let name = token;
+  if (token.includes("::")) {
+    if (!token.startsWith(prefix)) return;
+    name = token.slice(prefix.length);
+  }
+  const v = /\[v:\s*(-?\d+)\]/.exec(line);
   let list = raw.values.get(owner);
   if (!list) {
     list = [];
     raw.values.set(owner, list);
   }
-  list.push([token.slice(short.length + 2), v ? v[1] : ""]);
+  list.push([name, v ? v[1] : ""]);
 }
 
 function ingest(raw: Raw, line: string) {
@@ -142,6 +148,14 @@ function ingest(raw: Raw, line: string) {
   if (s1 < 0) return;
   const type = line.slice(a + 2, s1);
   if (type.includes("::")) {
+    ingestValue(raw, line, type);
+    return;
+  }
+  if (
+    raw.lastEnum &&
+    /\[v:\s*-?\d+\]/.test(line) &&
+    /^[A-Za-z_]\w*$/.test(type)
+  ) {
     ingestValue(raw, line, type);
     return;
   }
@@ -162,7 +176,7 @@ function ingest(raw: Raw, line: string) {
   }
 
   if (isType) {
-    if (isEnum) raw.lastEnum = path;
+    raw.lastEnum = isEnum ? path : "";
     const dot = path.lastIndexOf(".");
     raw.types.push({
       addr,
