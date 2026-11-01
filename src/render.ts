@@ -5,7 +5,7 @@ import {
   type Meta,
   type TypeDesc,
 } from "./types.ts";
-import { esc, pkgUrl, typeUrl } from "./shared.ts";
+import { esc, isNative, pkgUrl, typeUrl } from "./shared.ts";
 
 export interface TypeEntry {
   i: number;
@@ -86,8 +86,8 @@ export class Renderer {
     const sizes = this.meta.pk
       .map((p, i): [string, number] => [p, this.pkgTypes[i].length])
       .sort((a, b) => b[1] - a[1]);
-    const native = sizes.filter(([p]) => p.startsWith("/Script/"));
-    const other = sizes.filter(([p]) => !p.startsWith("/Script/"));
+    const native = sizes.filter(([p]) => isNative(p));
+    const other = sizes.filter(([p]) => !isNative(p));
     const structs = this.types.filter((c) => c.kind === Kind.Struct).length;
     const enums = this.types.filter((c) => c.kind === Kind.Enum).length;
     return {

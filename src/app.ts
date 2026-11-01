@@ -1,5 +1,5 @@
 import type { SearchIndex } from "./types.ts";
-import { esc, typeUrl } from "./shared.ts";
+import { compare, esc, isNative, typeUrl } from "./shared.ts";
 
 interface Search {
   idx: SearchIndex;
@@ -30,7 +30,7 @@ const ITEM =
   "group block truncate focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-azure-700 dark:focus-visible:outline-azure-300 px-3 py-px max-md:py-1.5 max-md:text-base hover:bg-steel-300 aria-[current]:bg-steel-300 aria-[current]:font-bold dark:hover:bg-ink-600 dark:aria-[current]:bg-ink-600";
 const BADGE =
   "mr-1.5 inline-block w-4 rounded-xs bg-steel-300 text-center text-xs max-md:w-5 max-md:text-sm group-aria-[current]:bg-white dark:bg-ink-600 dark:group-aria-[current]:bg-ink-950 text-steel-700 dark:text-steel-600";
-const HEADING =
+const SIDEBAR_HEADING =
   "mx-3 mt-2.5 mb-1 text-xs font-bold text-steel-700 dark:text-steel-600";
 
 let listToken = 0;
@@ -67,7 +67,7 @@ function getSearch(): Promise<Search> {
       const lower = names.map((n) => n.toLowerCase());
       const order = names
         .map((_, i) => i)
-        .sort((a, b) => lower[a] < lower[b] ? -1 : lower[a] > lower[b] ? 1 : 0);
+        .sort((a, b) => compare(lower[a], lower[b]));
       const memberLower = idx.n.map((n) => n.toLowerCase());
       return { idx, names, lower, memberLower, order };
     })
@@ -98,13 +98,15 @@ async function renderList() {
   const token = ++listToken;
   const q = input.value.trim().toLowerCase();
   const nat = nativeOnly.checked;
-  if (!searchIndex) list.innerHTML = `<p class="${HEADING}">Searching…</p>`;
+  if (!searchIndex) {
+    list.innerHTML = `<p class="${SIDEBAR_HEADING}">Searching…</p>`;
+  }
   let s: Search;
   try {
     s = await getSearch();
   } catch (e) {
     if (token === listToken) {
-      list.innerHTML = `<p class="${HEADING}">Failed to load: ${
+      list.innerHTML = `<p class="${SIDEBAR_HEADING}">Failed to load: ${
         esc((e as Error).message)
       }</p>`;
     }
@@ -113,7 +115,7 @@ async function renderList() {
   if (token !== listToken) return;
 
   const { idx, names, lower, memberLower, order } = s;
-  const shown = (i: number) => !nat || idx.t[i].startsWith("/Script/");
+  const shown = (i: number) => !nat || isNative(idx.t[i]);
   let th = "";
   let ts = 0;
   let total = 0;
@@ -125,7 +127,7 @@ async function renderList() {
       th += item(idx.t[i], "", idx.s[i], names[i]);
     }
   }
-  let h = `<h3 class="${HEADING}">Types (${total.toLocaleString()}${
+  let h = `<h3 class="${SIDEBAR_HEADING}">Types (${total.toLocaleString()}${
     total > ts ? `, showing ${ts}` : ""
   })</h3>${th}`;
 
@@ -143,9 +145,9 @@ async function renderList() {
         `${names[idx.o[i]]}.${idx.n[i]}`,
       );
     }
-    h += `<h3 class="${HEADING}">${
+    h += `<h3 class="${SIDEBAR_HEADING}">${
       n > 200 ? "Members (first 200)" : "Members"
-    }</h3>${mh || `<p class="${HEADING}">No matches</p>`}`;
+    }</h3>${mh || `<p class="${SIDEBAR_HEADING}">No matches</p>`}`;
   }
   list.innerHTML = h;
   markCurrent();

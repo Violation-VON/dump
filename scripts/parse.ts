@@ -5,6 +5,7 @@ import {
   type Method,
   type TypeDesc,
 } from "../src/types.ts";
+import { compare } from "../src/shared.ts";
 
 const ATTR = /\[(\w+): ([0-9A-Fa-f]+)\]/g;
 
@@ -214,9 +215,7 @@ function ingest(raw: Raw, line: string) {
 }
 
 function byName(a: { n: string }, b: { n: string }) {
-  const x = a.n.toLowerCase();
-  const y = b.n.toLowerCase();
-  return x < y ? -1 : x > y ? 1 : 0;
+  return compare(a.n.toLowerCase(), b.n.toLowerCase());
 }
 
 function dropMax(name: string, vs: [string, string][]) {
@@ -228,9 +227,7 @@ function dropMax(name: string, vs: [string, string][]) {
 }
 
 function resolve(raw: Raw): Model {
-  const sorted = raw.types.sort((a, b) =>
-    a.path < b.path ? -1 : a.path > b.path ? 1 : 0
-  );
+  const sorted = raw.types.sort((a, b) => compare(a.path, b.path));
   const indexByAddr = new Map<string, number>();
   sorted.forEach((c, i) => indexByAddr.set(c.addr, i));
 
