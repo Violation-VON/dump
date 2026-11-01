@@ -210,9 +210,9 @@ export class Renderer {
         esc(pkgUrl(pkg))
       }">${esc(label(pkg))}</a></div>`;
     h +=
-      `<h1 class="mb-3.5 font-serif text-3xl font-bold">${
-        cap(KINDS[c.kind])
-      } ${esc(c.name)}</h1>` +
+      `<h1 class="mb-3.5 font-serif text-3xl font-bold">${cap(KINDS[c.kind])} ${
+        esc(c.name)
+      }</h1>` +
       `<pre class="overflow-auto border border-steel-500 bg-steel-50 px-3.5 py-2.5 font-mono text-sm dark:border-ink-500 dark:bg-ink-900">${tree}</pre>`;
     if (kids.length) {
       h += `<div class="my-2.5 font-serif text-sm"><b>${
@@ -267,7 +267,9 @@ export class Renderer {
           mm.v
             .map(
               ([n, v]) =>
-                `<tr id="${esc(n)}" class="${MEMBER_ROW}"><td class="${TYPE_CELL}">${
+                `<tr id="${
+                  esc(n)
+                }" class="${MEMBER_ROW}"><td class="${TYPE_CELL}">${
                   esc(v)
                 }</td><td class="${CELL}"><a class="${MEMBER}" href="${
                   esc(classUrl(c.path, n))

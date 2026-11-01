@@ -173,7 +173,9 @@ function ingest(raw: Raw, line: string) {
     ? Object.values(at)
     : undefined;
   if (path[0] !== "/") {
-    if (isProperty) raw.inner.set(addr, { t: type, r: ref, ai: at.ai || null, av });
+    if (isProperty) {
+      raw.inner.set(addr, { t: type, r: ref, ai: at.ai || null, av });
+    }
     return;
   }
 

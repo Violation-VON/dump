@@ -79,11 +79,9 @@ function getSearch(): Promise<Search> {
 }
 
 function item(path: string, id: string, badge: string, label: string) {
-  return `<a class="${ITEM}" href="${
-    esc(classUrl(path) + id)
-  }" title="${esc(path)}"><span class="${BADGE}">${badge}</span>${
-    esc(label)
-  }</a>`;
+  return `<a class="${ITEM}" href="${esc(classUrl(path) + id)}" title="${
+    esc(path)
+  }"><span class="${BADGE}">${badge}</span>${esc(label)}</a>`;
 }
 
 function markCurrent() {
