@@ -48,7 +48,7 @@ function writeMembers(model: Model) {
 function writeSearch(model: Model) {
   const index: SearchIndex = {
     t: model.classes.map((c) => c.path),
-    s: model.classes.map((c) => c.struct ? "S" : "C").join(""),
+    s: model.classes.map((c) => "CSE"[c.kind]).join(""),
     n: [],
     c: [],
     k: "",
@@ -63,6 +63,11 @@ function writeSearch(model: Model) {
       index.n.push(m[0]);
       index.c.push(i);
       index.k += "m";
+    }
+    for (const v of entry.v ?? []) {
+      index.n.push(v[0]);
+      index.c.push(i);
+      index.k += "v";
     }
   }
   return writeJson(`${OUT}/search.json`, index);
@@ -89,7 +94,7 @@ if (await readStamp() === stamp) {
   const meta: Meta = {
     counts: model.counts,
     pk: model.packages,
-    c: model.classes.map((c) => [c.name, c.pk, c.sup, c.struct ? 1 : 0]),
+    c: model.classes.map((c) => [c.name, c.pk, c.sup, c.kind]),
   };
   await writeJson(`${OUT}/meta.json`, meta);
   await write(STAMP, stamp);
@@ -97,6 +102,7 @@ if (await readStamp() === stamp) {
   console.log(
     `${model.classes.length.toLocaleString()} classes, ` +
       `${model.counts.fields.toLocaleString()} fields, ` +
-      `${model.counts.methods.toLocaleString()} methods`,
+      `${model.counts.methods.toLocaleString()} methods, ` +
+      `${model.counts.values.toLocaleString()} enum values`,
   );
 }

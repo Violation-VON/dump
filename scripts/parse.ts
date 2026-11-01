@@ -35,13 +35,14 @@ interface RawClass {
   pkg: string;
   name: string;
   sup: string | null;
-  struct: boolean;
+  kind: 0 | 1 | 2;
 }
 
 interface Typed {
   t: string;
   r: string | null;
   ai: string | null;
+  av?: string[];
 }
 
 interface RawProp extends Typed {
@@ -60,6 +61,8 @@ interface Raw {
   members: Map<string, { f: RawProp[]; m: RawMethod[] }>;
   methods: Map<string, RawMethod>;
   inner: Map<string, Typed>;
+  values: Map<string, [string, string][]>;
+  lastEnum: string;
 }
 
 export interface ModelClass {
@@ -67,14 +70,14 @@ export interface ModelClass {
   name: string;
   pk: number;
   sup: number;
-  struct: boolean;
+  kind: 0 | 1 | 2;
 }
 
 export interface Model {
   packages: string[];
   classes: ModelClass[];
   entries: Map<number, Members>;
-  counts: { fields: number; methods: number };
+  counts: { fields: number; methods: number; values: number };
 }
 
 async function* readLines(path: string): AsyncGenerator<string> {
@@ -111,6 +114,19 @@ function method(raw: Raw, owner: string, name: string): RawMethod {
   return m;
 }
 
+function ingestValue(raw: Raw, line: string, token: string) {
+  const owner = raw.lastEnum;
+  const short = owner.slice(owner.lastIndexOf(".") + 1);
+  if (!owner || !token.startsWith(`${short}::`)) return;
+  const v = /\[v: (-?\d+)\]/.exec(line);
+  let list = raw.values.get(owner);
+  if (!list) {
+    list = [];
+    raw.values.set(owner, list);
+  }
+  list.push([token.slice(short.length + 2), v ? v[1] : ""]);
+}
+
 function ingest(raw: Raw, line: string) {
   if (line.charCodeAt(0) !== 91) return;
   const a = line.indexOf("] ");
@@ -118,7 +134,13 @@ function ingest(raw: Raw, line: string) {
   const s1 = line.indexOf(" ", a + 2);
   if (s1 < 0) return;
   const type = line.slice(a + 2, s1);
-  const isClass = type === "Class" || type === "ScriptStruct";
+  if (type.includes("::")) {
+    ingestValue(raw, line, type);
+    return;
+  }
+  const isStruct = type === "ScriptStruct";
+  const isEnum = type.endsWith("Enum");
+  const isClass = type === "Class" || isStruct || isEnum;
   const isFunction = type === "Function";
   const isProperty = type.endsWith("Property");
   if (!isClass && !isFunction && !isProperty) return;
@@ -133,6 +155,7 @@ function ingest(raw: Raw, line: string) {
   }
 
   if (isClass) {
+    if (isEnum) raw.lastEnum = path;
     const dot = path.lastIndexOf(".");
     raw.classes.push({
       addr,
@@ -140,14 +163,17 @@ function ingest(raw: Raw, line: string) {
       pkg: dot > 0 ? path.slice(0, dot) : "",
       name: dot > 0 ? path.slice(dot + 1) : path,
       sup: at.sps || null,
-      struct: type === "ScriptStruct",
+      kind: isEnum ? 2 : isStruct ? 1 : 0,
     });
     return;
   }
 
   const ref = at.pc || at.ss || at.mc || at.ic || null;
+  const av = type === "EnumProperty" || type === "ByteProperty"
+    ? Object.values(at)
+    : undefined;
   if (path.charCodeAt(0) !== 47) {
-    if (isProperty) raw.inner.set(addr, { t: type, r: ref, ai: at.ai || null });
+    if (isProperty) raw.inner.set(addr, { t: type, r: ref, ai: at.ai || null, av });
     return;
   }
 
@@ -164,6 +190,7 @@ function ingest(raw: Raw, line: string) {
     t: type,
     r: ref,
     ai: at.ai || null,
+    av,
     o: parseInt(at.o || "0", 16),
     n: "",
   };
@@ -182,6 +209,14 @@ function byName(a: { n: string }, b: { n: string }) {
   const x = a.n.toLowerCase();
   const y = b.n.toLowerCase();
   return x < y ? -1 : x > y ? 1 : 0;
+}
+
+function dropMax(name: string, vs: [string, string][]) {
+  const last = vs[vs.length - 1];
+  if (vs.length < 2 || !last[0].endsWith("_MAX")) return vs;
+  const stem = last[0].slice(0, -4);
+  const rest = vs.slice(0, -1);
+  return stem === name || rest.every(([n]) => n.startsWith(stem)) ? rest : vs;
 }
 
 function resolve(raw: Raw): Model {
@@ -206,12 +241,18 @@ function resolve(raw: Raw): Model {
       name: c.name,
       pk,
       sup: sup === undefined ? -1 : sup,
-      struct: c.struct,
+      kind: c.kind,
     };
   });
 
   const describe = (p: Typed, depth = 0): TypeDesc => {
     const ci = p.r ? (indexByAddr.get(p.r) ?? -1) : -1;
+    if (p.av) {
+      for (const a of p.av) {
+        const k = indexByAddr.get(a);
+        if (k !== undefined && classes[k].kind === 2) return ["e", k];
+      }
+    }
     if (p.t === "ArrayProperty" || p.t === "SetProperty") {
       const inner = p.ai ? raw.inner.get(p.ai) : undefined;
       return [
@@ -230,9 +271,12 @@ function resolve(raw: Raw): Model {
   const entries = new Map<number, Members>();
   let fields = 0;
   let methods = 0;
+  let values = 0;
   classes.forEach((c, i) => {
-    const mm = raw.members.get(c.path);
-    if (!mm || (!mm.f.length && !mm.m.length)) return;
+    const mm = raw.members.get(c.path) ?? { f: [], m: [] };
+    const all = raw.values.get(c.path);
+    const vs = all && dropMax(c.name, all);
+    if (!mm.f.length && !mm.m.length && !vs) return;
     const f = mm.f
       .slice()
       .sort((a, b) => a.o - b.o)
@@ -247,10 +291,15 @@ function resolve(raw: Raw): Model {
       ]);
     fields += f.length;
     methods += m.length;
-    entries.set(i, { f, m });
+    const entry: Members = { f, m };
+    if (vs) {
+      entry.v = vs;
+      values += vs.length;
+    }
+    entries.set(i, entry);
   });
 
-  return { packages, classes, entries, counts: { fields, methods } };
+  return { packages, classes, entries, counts: { fields, methods, values } };
 }
 
 export async function parseDump(path: string): Promise<Model> {
@@ -259,6 +308,8 @@ export async function parseDump(path: string): Promise<Model> {
     members: new Map(),
     methods: new Map(),
     inner: new Map(),
+    values: new Map(),
+    lastEnum: "",
   };
   for await (const line of readLines(path)) ingest(raw, line);
   return resolve(raw);

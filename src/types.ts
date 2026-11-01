@@ -4,7 +4,8 @@ export type TypeDesc =
   | ["S", TypeDesc | 0]
   | ["o", number]
   | ["s", number]
-  | ["k", number];
+  | ["k", number]
+  | ["e", number];
 
 export type Field = [name: string, type: TypeDesc, offset: number];
 
@@ -17,17 +18,18 @@ export type Method = [
 export interface Members {
   f: Field[];
   m: Method[];
+  v?: [name: string, value: string][];
 }
 
 export type ClassRow = [
   name: string,
   pkg: number,
   parent: number,
-  isStruct: 0 | 1,
+  kind: 0 | 1 | 2,
 ];
 
 export interface Meta {
-  counts: { fields: number; methods: number };
+  counts: { fields: number; methods: number; values: number };
   pk: string[];
   c: ClassRow[];
 }

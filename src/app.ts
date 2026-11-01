@@ -129,7 +129,7 @@ async function renderList() {
       mh += item(
         idx.t[idx.c[i]],
         `#${encodeURIComponent(m ? `${idx.n[i]}()` : idx.n[i])}`,
-        m ? "m" : "f",
+        idx.k[i],
         `${names[idx.c[i]]}.${idx.n[i]}`,
       );
     }

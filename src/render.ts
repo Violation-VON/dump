@@ -6,7 +6,7 @@ export interface Cls {
   name: string;
   pk: number;
   sup: number;
-  struct: boolean;
+  kind: 0 | 1 | 2;
   path: string;
 }
 
@@ -22,6 +22,9 @@ export interface Page {
   main: string;
 }
 
+const KINDS = ["class", "struct", "enum"] as const;
+const ICONS: Icon[] = ["C", "S", "E"];
+const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 const label = (p: string) => p || "(none)";
 const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
 
@@ -62,7 +65,7 @@ export class Renderer {
       name: n,
       pk,
       sup,
-      struct: !!st,
+      kind: st,
       path: meta.pk[pk] ? `${meta.pk[pk]}.${n}` : n,
     }));
     this.pkgClasses = meta.pk.map((): Cls[] => []);
@@ -81,7 +84,8 @@ export class Renderer {
       .sort((a, b) => b[1] - a[1]);
     const native = sizes.filter(([p]) => p.startsWith("/Script/"));
     const other = sizes.filter(([p]) => !p.startsWith("/Script/"));
-    const structs = this.classes.filter((c) => c.struct).length;
+    const structs = this.classes.filter((c) => c.kind === 1).length;
+    const enums = this.classes.filter((c) => c.kind === 2).length;
     return {
       title: "",
       description:
@@ -101,11 +105,13 @@ export class Renderer {
           esc(pkgUrl("/Script/TheIsle"))
         }">/Script/TheIsle</a>, and all packages are listed below.</p></div>` +
         `<div class="mt-3 mb-2 flex flex-wrap gap-x-7 gap-y-2 text-sm"><span><b class="block text-xl">${
-          (this.classes.length - structs).toLocaleString()
+          (this.classes.length - structs - enums).toLocaleString()
         }</b>classes</span>` +
         `<span><b class="block text-xl">${structs.toLocaleString()}</b>structs</span>` +
+        `<span><b class="block text-xl">${enums.toLocaleString()}</b>enums</span>` +
         `<span><b class="block text-xl">${this.meta.counts.fields.toLocaleString()}</b>fields</span>` +
-        `<span><b class="block text-xl">${this.meta.counts.methods.toLocaleString()}</b>methods</span></div>` +
+        `<span><b class="block text-xl">${this.meta.counts.methods.toLocaleString()}</b>methods</span>` +
+        `<span><b class="block text-xl">${this.meta.counts.values.toLocaleString()}</b>enum values</span></div>` +
         this.pkgTable("Native packages", native) +
         (other.length ? this.pkgTable("Other packages", other) : ""),
     };
@@ -142,29 +148,31 @@ export class Renderer {
   public pkg(i: number): Page {
     const pkg = this.meta.pk[i];
     const list = this.pkgClasses[i];
-    const structs = list.filter((c) => c.struct).length;
+    const structs = list.filter((c) => c.kind === 1).length;
+    const enums = list.filter((c) => c.kind === 2).length;
     return {
       title: `${label(pkg)} package`,
       description: `${this.game} documentation of package ${
         label(pkg)
-      }: its classes and structs.`,
+      }: its classes, structs and enums.`,
       indexable: true,
       icon: "P",
       crumbs: [[this.name, ""], [label(pkg), pkgUrl(pkg)]],
       card: this.card("P", "Package", label(pkg), "", "", [
-        [list.length - structs, "classes"],
+        [list.length - structs - enums, "classes"],
         [structs, "structs"],
+        [enums, "enums"],
       ]),
       main:
         `<div class="wrap-anywhere font-mono text-sm ${MUTED}">Package</div><h1 class="mb-3.5 font-serif text-3xl font-bold">${
           esc(label(pkg))
         }</h1>` +
-        `<h2 class="${HEADING}">Classes and structs (${list.length.toLocaleString()})</h2><div class="${BOX}"><table class="w-full font-mono text-sm">` +
+        `<h2 class="${HEADING}">Classes, structs and enums (${list.length.toLocaleString()})</h2><div class="${BOX}"><table class="w-full font-mono text-sm">` +
         list
           .map(
             (c) =>
               `<tr class="${ROW}"><td class="${TYPE_CELL}">${
-                c.struct ? "struct" : "class"
+                KINDS[c.kind]
               }</td><td class="${CELL}">${this.link(c)}</td>` +
               `<td class="${DIM_CELL}">${
                 this.classes[c.sup]
@@ -203,12 +211,12 @@ export class Renderer {
       }">${esc(label(pkg))}</a></div>`;
     h +=
       `<h1 class="mb-3.5 font-serif text-3xl font-bold">${
-        c.struct ? "Struct" : "Class"
+        cap(KINDS[c.kind])
       } ${esc(c.name)}</h1>` +
       `<pre class="overflow-auto border border-steel-500 bg-steel-50 px-3.5 py-2.5 font-mono text-sm dark:border-ink-500 dark:bg-ink-900">${tree}</pre>`;
     if (kids.length) {
       h += `<div class="my-2.5 font-serif text-sm"><b>${
-        c.struct ? "Child structs" : "Direct subclasses"
+        c.kind === 1 ? "Child structs" : "Direct subclasses"
       }:</b> ${kids.slice(0, 60).map((k) => this.link(k)).join(", ")}`;
       h += kids.length > 60 ? ` and ${kids.length - 60} more</div>` : "</div>";
     }
@@ -253,29 +261,46 @@ export class Renderer {
             .join("")
         }</table></div>`;
     }
-    if (!mm.f.length && !mm.m.length) {
+    if (mm.v?.length) {
+      h +=
+        `<h2 class="${HEADING}">Values</h2><div class="${BOX}"><table class="w-full font-mono text-sm">${
+          mm.v
+            .map(
+              ([n, v]) =>
+                `<tr id="${esc(n)}" class="${MEMBER_ROW}"><td class="${TYPE_CELL}">${
+                  esc(v)
+                }</td><td class="${CELL}"><a class="${MEMBER}" href="${
+                  esc(classUrl(c.path, n))
+                }">${esc(n)}</a></td></tr>`,
+            )
+            .join("")
+        }</table></div>`;
+    }
+    if (!mm.f.length && !mm.m.length && !mm.v?.length) {
       h +=
         `<p class="my-4 font-serif ${MUTED}">Nothing declared on this type.</p>`;
     }
     const parent = this.classes[c.sup];
-    const kind = c.struct ? "struct" : "class";
-    const stats: [number, string][] = [[mm.f.length, "fields"]];
-    if (!c.struct || mm.m.length) stats.push([mm.m.length, "methods"]);
+    const kind = KINDS[c.kind];
+    const stats: [number, string][] = c.kind === 2
+      ? [[mm.v?.length ?? 0, "values"]]
+      : [[mm.f.length, "fields"]];
+    if (c.kind === 0 || mm.m.length) stats.push([mm.m.length, "methods"]);
     return {
       title: `${c.name} ${kind} (${pkg})`,
       description: `${this.game} documentation of ${kind} ${c.name}${
         pkg ? ` in package ${pkg}` : ""
       }${parent ? `, which extends ${parent.name}` : ""}.`,
-      indexable: mm.f.length + mm.m.length > 0,
-      icon: c.struct ? "S" : "C",
+      indexable: mm.f.length + mm.m.length + (mm.v?.length ?? 0) > 0,
+      icon: ICONS[c.kind],
       crumbs: [
         [this.name, ""],
         [label(pkg), pkgUrl(pkg)],
         [c.name, classUrl(c.path)],
       ],
       card: this.card(
-        c.struct ? "S" : "C",
-        c.struct ? "Struct" : "Class",
+        ICONS[c.kind],
+        cap(KINDS[c.kind]),
         c.name,
         pkg,
         parent ? parent.name : "",
@@ -364,6 +389,10 @@ export class Renderer {
       case "o": {
         const c = this.classes[d[1]];
         return `${c ? this.link(c) : "UObject"}*`;
+      }
+      case "e": {
+        const c = this.classes[d[1]];
+        return c ? this.link(c) : "enum";
       }
       case "s": {
         const c = this.classes[d[1]];
