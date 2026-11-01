@@ -5,6 +5,7 @@ interface Search {
   idx: SearchIndex;
   names: string[];
   lower: string[];
+  memberLower: string[];
   order: number[];
 }
 
@@ -67,7 +68,8 @@ function getSearch(): Promise<Search> {
       const order = names
         .map((_, i) => i)
         .sort((a, b) => lower[a] < lower[b] ? -1 : lower[a] > lower[b] ? 1 : 0);
-      return { idx, names, lower, order };
+      const memberLower = idx.n.map((n) => n.toLowerCase());
+      return { idx, names, lower, memberLower, order };
     })
     .catch((e) => {
       searchIndex = null;
@@ -77,32 +79,42 @@ function getSearch(): Promise<Search> {
 }
 
 function item(path: string, id: string, badge: string, label: string) {
-  const url = classUrl(path);
-  const current = !id && base + url === location.pathname;
-  return `<a class="${ITEM}" href="${esc(url + id)}" title="${esc(path)}"${
-    current ? ' aria-current="page"' : ""
-  }><span class="${BADGE}">${badge}</span>${esc(label)}</a>`;
+  return `<a class="${ITEM}" href="${
+    esc(classUrl(path) + id)
+  }" title="${esc(path)}"><span class="${BADGE}">${badge}</span>${
+    esc(label)
+  }</a>`;
+}
+
+function markCurrent() {
+  for (const a of list.querySelectorAll("a")) {
+    if (!a.hash && a.pathname === location.pathname) {
+      a.setAttribute("aria-current", "page");
+    } else {
+      a.removeAttribute("aria-current");
+    }
+  }
 }
 
 async function renderList() {
   const token = ++listToken;
   const q = input.value.trim().toLowerCase();
   const nat = nativeOnly.checked;
-  if (!searchIndex) list.innerHTML = `<h3 class="${HEADING}">Searching…</h3>`;
+  if (!searchIndex) list.innerHTML = `<p class="${HEADING}">Searching…</p>`;
   let s: Search;
   try {
     s = await getSearch();
   } catch (e) {
     if (token === listToken) {
-      list.innerHTML = `<h3 class="${HEADING}">Failed to load: ${
+      list.innerHTML = `<p class="${HEADING}">Failed to load: ${
         esc((e as Error).message)
-      }</h3>`;
+      }</p>`;
     }
     return;
   }
   if (token !== listToken) return;
 
-  const { idx, names, lower, order } = s;
+  const { idx, names, lower, memberLower, order } = s;
   const shown = (i: number) => !nat || idx.t[i].startsWith("/Script/");
   let th = "";
   let ts = 0;
@@ -123,7 +135,7 @@ async function renderList() {
     let mh = "";
     let n = 0;
     for (let i = 0; i < idx.n.length; i++) {
-      if (!idx.n[i].toLowerCase().includes(q) || !shown(idx.c[i])) continue;
+      if (!memberLower[i].includes(q) || !shown(idx.c[i])) continue;
       if (++n > 200) break;
       const m = idx.k[i] === "m";
       mh += item(
@@ -135,9 +147,10 @@ async function renderList() {
     }
     h += `<h3 class="${HEADING}">${
       n > 200 ? "Members (first 200)" : "Members"
-    }</h3>${mh || `<h3 class="${HEADING}">No matches</h3>`}`;
+    }</h3>${mh || `<p class="${HEADING}">No matches</p>`}`;
   }
   list.innerHTML = h;
+  markCurrent();
 }
 
 function syncQuery() {
@@ -321,7 +334,7 @@ async function navigate(url: URL, push: boolean, scrollTop?: number) {
 
     if (push) history.pushState({ scrollTop: 0 }, "", url.href);
 
-    renderList();
+    markCurrent();
 
     requestAnimationFrame(() => {
       if (controller.signal.aborted) return;
@@ -329,9 +342,14 @@ async function navigate(url: URL, push: boolean, scrollTop?: number) {
       if (typeof scrollTop === "number") {
         main.scrollTop = scrollTop;
       } else if (url.hash) {
-        const target = document.getElementById(
-          decodeURIComponent(url.hash.slice(1)),
-        );
+        let target: HTMLElement | null = null;
+        try {
+          target = document.getElementById(
+            decodeURIComponent(url.hash.slice(1)),
+          );
+        } catch {
+          target = null;
+        }
         if (target) target.scrollIntoView();
         else main.scrollTop = 0;
       } else {

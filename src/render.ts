@@ -340,12 +340,12 @@ export class Renderer {
         : "") +
       `<g font-family="Arial, sans-serif" transform="translate(0 220)">` +
       stats
-        .map(([n, label], i) =>
+        .map(([n, text], i) =>
           `<text x="${
             i * 60
           }" fill="#000" font-size="20" font-weight="500">${n.toLocaleString()}</text><text x="${
             i * 60
-          }" y="20" fill="${grey}" font-size="13">${label}</text>`
+          }" y="20" fill="${grey}" font-size="13">${text}</text>`
         )
         .join("") +
       `<text x="552" y="-2" fill="${grey}" font-size="19" font-weight="700" text-anchor="end">${

@@ -128,7 +128,7 @@ function ingestValue(raw: Raw, line: string, token: string) {
 }
 
 function ingest(raw: Raw, line: string) {
-  if (line.charCodeAt(0) !== 91) return;
+  if (line[0] !== "[") return;
   const a = line.indexOf("] ");
   if (a < 0) return;
   const s1 = line.indexOf(" ", a + 2);
@@ -172,7 +172,7 @@ function ingest(raw: Raw, line: string) {
   const av = type === "EnumProperty" || type === "ByteProperty"
     ? Object.values(at)
     : undefined;
-  if (path.charCodeAt(0) !== 47) {
+  if (path[0] !== "/") {
     if (isProperty) raw.inner.set(addr, { t: type, r: ref, ai: at.ai || null, av });
     return;
   }
