@@ -278,6 +278,7 @@ main.addEventListener("scroll", () => {
   scrollTimer = setTimeout(saveScroll, 150);
 }, { passive: true });
 
+let displayedPage = location.pathname + location.search;
 let navigation: AbortController | undefined;
 
 async function navigate(url: URL, push: boolean, scrollTop?: number) {
@@ -333,6 +334,8 @@ async function navigate(url: URL, push: boolean, scrollTop?: number) {
     );
 
     if (push) history.pushState({ scrollTop: 0 }, "", url.href);
+    displayedPage = url.pathname + url.search;
+    if (url.hash) location.replace(url.href);
 
     markCurrent();
 
@@ -404,5 +407,6 @@ document.addEventListener("click", (event) => {
 });
 
 self.addEventListener("popstate", (event) => {
+  if (location.pathname + location.search === displayedPage) return;
   void navigate(new URL(location.href), false, event.state?.scrollTop);
 });
