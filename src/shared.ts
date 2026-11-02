@@ -20,4 +20,4 @@ export const pkgUrl = (p: string) => ePath(p);
 
 export const isNative = (path: string) => path.startsWith("/Script/");
 
-export const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
+export const collator = new Intl.Collator("en");

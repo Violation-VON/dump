@@ -1,5 +1,5 @@
 import type { SearchIndex } from "./types.ts";
-import { compare, esc, isNative, typeUrl } from "./shared.ts";
+import { collator, esc, isNative, typeUrl } from "./shared.ts";
 
 interface Search {
   idx: SearchIndex;
@@ -67,7 +67,7 @@ function getSearch(): Promise<Search> {
       const lower = names.map((n) => n.toLowerCase());
       const order = names
         .map((_, i) => i)
-        .sort((a, b) => compare(lower[a], lower[b]));
+        .sort((a, b) => collator.compare(names[a], names[b]));
       const memberLower = idx.n.map((n) => n.toLowerCase());
       return { idx, names, lower, memberLower, order };
     })

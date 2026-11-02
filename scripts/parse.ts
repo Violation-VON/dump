@@ -5,7 +5,7 @@ import {
   type Method,
   type TypeDesc,
 } from "../src/types.ts";
-import { compare } from "../src/shared.ts";
+import { collator } from "../src/shared.ts";
 
 const ATTR = /\[(\w+): ([0-9A-Fa-f]+)\]/g;
 
@@ -229,7 +229,7 @@ function ingest(raw: Raw, line: string) {
 }
 
 function byName(a: { n: string }, b: { n: string }) {
-  return compare(a.n.toLowerCase(), b.n.toLowerCase());
+  return collator.compare(a.n, b.n);
 }
 
 function dropMax(name: string, vs: [string, string][]) {
@@ -241,7 +241,7 @@ function dropMax(name: string, vs: [string, string][]) {
 }
 
 function resolve(raw: Raw): Model {
-  const sorted = raw.types.sort((a, b) => compare(a.path, b.path));
+  const sorted = raw.types.sort((a, b) => collator.compare(a.path, b.path));
   const indexByAddr = new Map<string, number>();
   sorted.forEach((c, i) => indexByAddr.set(c.addr, i));
 
