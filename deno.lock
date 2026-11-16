@@ -1,7 +1,7 @@
 {
   "version": "5",
   "specifiers": {
-    "npm:@tailwindcss/vite@^4.3.4": "4.3.5_vite@8.3.6",
+    "npm:@tailwindcss/vite@^4.3.5": "4.3.5_vite@8.3.6",
     "npm:hash-wasm@^4.12.0": "4.12.0",
     "npm:html-minifier-terser@^7.2.0": "7.2.0",
     "npm:mustache@^4.2.0": "4.2.0",
@@ -256,8 +256,8 @@
         "tslib"
       ]
     },
-    "enhanced-resolve@5.26.1": {
-      "integrity": "sha512-PPnnSJq3azKOIewXR/uppBV/6h98dprBJ/WaQ9Qgj10xX1lJLNfg+XShpbsrSqcDSy2yYYyhfXM1wWhftqgyzw==",
+    "enhanced-resolve@5.27.0": {
+      "integrity": "sha512-Do6BB2xzlcc/odFg+XEYyneAx4T/WfywO71yw9ePS2tVfRsf7JVR4mUeELadIeHzixkzbG5DpluiEFPi2WGfYQ==",
       "dependencies": [
         "graceful-fs",
         "tapable"
@@ -280,8 +280,8 @@
       "os": ["darwin"],
       "scripts": true
     },
-    "graceful-fs@4.2.11": {
-      "integrity": "sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ=="
+    "graceful-fs@4.2.12": {
+      "integrity": "sha512-iuyGF2E4oafQfPsRrG2wtY2ILupMhvtdrhzrxB+0VcjsPpSPttpfYdjnGFGsTi5MaJFjI1jOKHPQ6UTbTj9TAw=="
     },
     "hash-wasm@4.12.0": {
       "integrity": "sha512-+/2B2rYLb48I/evdOIhP+K/DD2ca2fgBjp6O+GBEnCDk2e4rpeXIK8GvIyRPjTezgmWn9gmKwkQjjx6BtqDHVQ=="
@@ -476,8 +476,8 @@
     "tailwindcss@4.3.5": {
       "integrity": "sha512-FcQk9BuffmEHJP2G0XmB2SplU1aLTI7j07Kunk+U74Ny+XiWOtzXz9aujFZ/avntw1e2cOv/3PkgzflQ7gX2vQ=="
     },
-    "tapable@2.3.3": {
-      "integrity": "sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A=="
+    "tapable@2.3.4": {
+      "integrity": "sha512-NHFiWnAbMJxNNpBwiO7jJVGDuqMxT9/oV8v57RR+fgBQShkJil5inGD8/xWy0hjLyHQyX1tu27QANhlz3KBqCg=="
     },
     "terser@5.51.2": {
       "integrity": "sha512-bWnjSNscmuI+GJze6ZupnHP8G/cTcsJF+bXCeQknk2SHQsgbNJnLrqiH9jZ2W4STPVXH2mDKKRX3iwPhc9Cn/Q==",
@@ -516,7 +516,7 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@tailwindcss/vite@^4.3.4",
+      "npm:@tailwindcss/vite@^4.3.5",
       "npm:hash-wasm@^4.12.0",
       "npm:html-minifier-terser@^7.2.0",
       "npm:mustache@^4.2.0",
